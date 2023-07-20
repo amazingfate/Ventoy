@@ -2,7 +2,7 @@ name: Ventoy CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, amazingfate-ci ]
   pull_request:
     branches: [ master ]
   
