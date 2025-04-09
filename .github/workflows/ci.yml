@@ -2,7 +2,7 @@ name: Ventoy CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ loongarch-support-rebased ]
   pull_request:
     branches: [ master ]
   
