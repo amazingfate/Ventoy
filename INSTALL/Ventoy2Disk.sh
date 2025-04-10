@@ -18,6 +18,8 @@ elif uname -m | grep -E -q 'x86_64|amd64'; then
     export TOOLDIR=x86_64
 elif uname -m | grep -E -q 'mips64'; then
     export TOOLDIR=mips64el
+elif uname -m | grep -E -q 'loongarch64'; then
+    export TOOLDIR=loongarch64
 else
     export TOOLDIR=i386
 fi
