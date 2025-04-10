@@ -10,7 +10,7 @@ fi
 
 ############### cpio ############
 chmod -R 777 cpio
-rm -f ventoy.cpio ventoy_x86.cpio ventoy_arm64.cpio ventoy_mips64.cpio 
+rm -f ventoy.cpio ventoy_x86.cpio ventoy_arm64.cpio ventoy_mips64.cpio ventoy_loongarch64.cpio
 
 cp -a cpio	cpio_tmp
 
@@ -55,6 +55,7 @@ cp -a $VENTOY_PATH/FUSEISO/vtoy_fuse_iso_32 tool/
 cp -a $VENTOY_PATH/FUSEISO/vtoy_fuse_iso_64 tool/
 cp -a $VENTOY_PATH/VtoyTool/vtoytool tool/
 rm -f tool/vtoytool/00/vtoytool_aa64
+rm -f tool/vtoytool/00/vtoytool_la64
 rm -f tool/vtoytool/00/vtoytool_m64e
 cp -a $VENTOY_PATH/VBLADE/vblade-master/vblade_32 tool/
 cp -a $VENTOY_PATH/VBLADE/vblade-master/vblade_64 tool/
@@ -91,6 +92,7 @@ cp -a $VENTOY_PATH/FUSEISO/vtoy_fuse_iso_aa64 tool/
 cp -a $VENTOY_PATH/VtoyTool/vtoytool tool/
 rm -f tool/vtoytool/00/vtoytool_32
 rm -f tool/vtoytool/00/vtoytool_64
+rm -f tool/vtoytool/00/vtoytool_la64
 rm -f tool/vtoytool/00/vtoytool_m64e
 cp -a $VENTOY_PATH/VBLADE/vblade-master/vblade_aa64 tool/
 
@@ -104,6 +106,39 @@ rm -rf tool
 
 cd ..
 find .| cpio  -o -H newc --owner=root:root >../ventoy_arm64.cpio
+
+cd ..
+rm -rf cpio_tmp
+
+
+
+########## cpio_loongarch64 ##############
+chmod -R 777 cpio_loongarch64
+cp -a cpio_loongarch64	cpio_tmp
+cp -a cpio_x86/ventoy/tool/*.sh cpio_tmp/ventoy/tool/
+
+cd cpio_tmp/ventoy
+
+cp -a $VENTOY_PATH/DMSETUP/dmsetupla64 tool/
+cp -a $VENTOY_PATH/SQUASHFS/unsquashfs_la64 tool/
+cp -a $VENTOY_PATH/FUSEISO/vtoy_fuse_iso_la64 tool/
+cp -a $VENTOY_PATH/VtoyTool/vtoytool tool/
+rm -f tool/vtoytool/00/vtoytool_32
+rm -f tool/vtoytool/00/vtoytool_64
+rm -f tool/vtoytool/00/vtoytool_aa64
+rm -f tool/vtoytool/00/vtoytool_m64e
+cp -a $VENTOY_PATH/VBLADE/vblade-master/vblade_la64 tool/
+
+cp -a $VENTOY_PATH/LZIP/lunzipla64 tool/
+
+chmod -R 777 ./tool
+
+find ./tool | cpio  -o -H newc --owner=root:root >tool.cpio
+xz tool.cpio
+rm -rf tool
+
+cd ..
+find .| cpio  -o -H newc --owner=root:root >../ventoy_loongarch64.cpio
 
 cd ..
 rm -rf cpio_tmp
@@ -124,6 +159,7 @@ cp -a $VENTOY_PATH/VtoyTool/vtoytool tool/
 rm -f tool/vtoytool/00/vtoytool_32
 rm -f tool/vtoytool/00/vtoytool_64
 rm -f tool/vtoytool/00/vtoytool_aa64
+rm -f tool/vtoytool/00/vtoytool_la64
 # cp -a $VENTOY_PATH/VBLADE/vblade-master/vblade_m64e tool/
 
 # cp -a $VENTOY_PATH/LZIP/lunzipaa64 tool/
@@ -153,4 +189,5 @@ cp -a ventoy.cpio $VENTOY_PATH/INSTALL/ventoy/
 cp -a ventoy_x86.cpio $VENTOY_PATH/INSTALL/ventoy/
 cp -a ventoy_arm64.cpio $VENTOY_PATH/INSTALL/ventoy/
 cp -a ventoy_mips64.cpio $VENTOY_PATH/INSTALL/ventoy/
+cp -a ventoy_loongarch64.cpio $VENTOY_PATH/INSTALL/ventoy/
 
