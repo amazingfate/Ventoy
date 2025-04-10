@@ -646,9 +646,10 @@ static int ventoy_check_official_device(grub_device_t dev)
     {
         offset = partition->start + partition->len;
         partition = file->device->disk->partition;
-        if ((partition->number != 1) || (partition->len != 65536) || (offset != partition->start))
+        if ((partition->number != 1) || (partition->len != 131072) || (offset != partition->start))
         {
             grub_file_close(file);
+            grub_error(GRUB_ERR_BAD_ARGUMENT, "Disk partition layout check failed with partition->number %d, partition->len %d, offset %d, partition->start %d.", partition->number, partition->len, offset, partition->start);
             return ventoy_set_check_result(7, "Disk partition layout check failed.");
         }
     }
