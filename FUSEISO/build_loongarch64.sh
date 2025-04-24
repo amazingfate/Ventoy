@@ -13,7 +13,7 @@ name=vtoy_fuse_iso_la64
 export C_INCLUDE_PATH=$LIBFUSE_DIR/include
 
 rm -f $name
-gcc -static -O2 -D_FILE_OFFSET_BITS=64  vtoy_fuse_iso.c $LIBFUSE_DIR/lib/libfuse.a  -o  $name
+musl-gcc -static -O2 -D_FILE_OFFSET_BITS=64  vtoy_fuse_iso.c $LIBFUSE_DIR/lib/libfuse.a  -o  $name
 
 strip --strip-all $name
 

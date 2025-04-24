@@ -32,7 +32,7 @@ fi
 
 ./makeconf.sh
 
-./configure --prefix="$LIBFUSE_DIR"
+./configure --prefix="$LIBFUSE_DIR" CC=musl-gcc
 make -j 16
 make install
 cd ..
