@@ -114,6 +114,7 @@ cd ../../
 
 
 cp $OPT ./ventoy   $tmpmnt/
+rm -f EFI/BOOT/BOOTMIPS.EFI
 cp $OPT ./EFI   $tmpmnt/
 cp $OPT ./tool/ENROLL_THIS_KEY_IN_MOKMANAGER.cer $tmpmnt/
 
