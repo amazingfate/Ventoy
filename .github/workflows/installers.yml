@@ -34,14 +34,33 @@ jobs:
             ventoy-trixie \
             sh build/ci-release.sh
 
-      - name: Upload Linux installer and LiveCD
-        uses: actions/upload-artifact@v4
+      # Publish each file on its own. A combined zip named after the LiveCD
+      # hid the installer, and a multi-path upload can succeed when only the
+      # ISO matches. archive:false keeps the real filename as the artifact name.
+      - name: Check Linux installer and LiveCD
+        run: |
+          set -eu
+          tarf=$(echo INSTALL/ventoy-*-linux.tar.gz)
+          iso=$(echo LiveCDGUI/ventoy-*-livecd.iso)
+          test -f "$tarf"
+          test -f "$iso"
+          ls -lh "$tarf" "$iso"
+          echo "LINUX_TAR=$tarf" >> "$GITHUB_ENV"
+          echo "LIVE_ISO=$iso" >> "$GITHUB_ENV"
+
+      - name: Upload Linux installer
+        uses: actions/upload-artifact@v7
         with:
-          name: ventoy-linux-livecd
+          path: ${{ env.LINUX_TAR }}
+          archive: false
           if-no-files-found: error
-          path: |
-            INSTALL/ventoy-*-linux.tar.gz
-            LiveCDGUI/ventoy-*-livecd.iso
+
+      - name: Upload LiveCD ISO
+        uses: actions/upload-artifact@v7
+        with:
+          path: ${{ env.LIVE_ISO }}
+          archive: false
+          if-no-files-found: error
 
   windows-installer:
     name: Windows installer
@@ -146,8 +165,8 @@ jobs:
           Get-Item artifacts\Ventoy2Disk.exe | Format-List FullName, Length
 
       - name: Upload Windows installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: ventoy-windows
-          if-no-files-found: error
           path: artifacts/Ventoy2Disk.exe
+          archive: false
+          if-no-files-found: error
