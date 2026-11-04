@@ -95,8 +95,15 @@ cp -a /VTOY/autostart /union/etc/xdg/openbox/autostart
 cp -a /VTOY/*.png /union/ventoy/
 
 mkdir -p /union/usr/local/sbin
-mv /VTOY/ntfs-3g.tar.gz /union/usr/local/sbin/
 mv /VTOY/busybox /union/usr/local/sbin/
+
+if [ -x /VTOY/ntfs3g/sbin/ntfsresize ]; then
+    mkdir -p /union/bin /union/sbin /union/usr/bin /union/usr/sbin
+    cp -a /VTOY/ntfs3g/sbin/ntfsresize /union/sbin/
+    cp -a /VTOY/ntfs3g/sbin/ntfsresize /union/usr/sbin/
+    cp -a /VTOY/ntfs3g/bin/ntfsfix /union/bin/
+    cp -a /VTOY/ntfs3g/bin/ntfsfix /union/usr/bin/
+fi
 
 
 cp -a /bin/busybox /union/bin; ln -sf /union/lib /lib

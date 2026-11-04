@@ -1,22 +1,19 @@
 
-Files below are from Porteus-Kiosk-5.2.0-x86_64.iso (https://porteus-kiosk.org/public/5.2/)
+Files below are from Porteus-Kiosk-5.5.0-x86_64.iso
+https://archive.org/download/porteus-kiosk-client/Porteus-Kiosk-5.5.0-x86_64.iso
+MD5 d26752caac5f6124006b78a47dc70ecd
 
 MD5SUM:
-42857b439725a0e1adb0c396849f57c9  EXT/000-kernel.xzm
-9b699227f44178dfd323d7503510c868  EXT/001-core.xzm
-aafb2191accb37bd6725c84522c92e51  EXT/003-settings.xzm
-0cd503757d9829847a01b9403f60fee2  EXT/004-wifi.xzm
-501b6096122dcf0da75cdbba1868cd31  EXT/06-fonts.xzm
-ce677b50b223ce76df070d23af016338  EXT/initrd.xz
-9e96e4550de38f8e22733a0afe56dab3  EXT/vmlinuz
+e2edc857acff4fd01f7ff557731debf9  EXT/000-kernel.xzm
+65bed901c77890f80534c56bf12472bf  EXT/001-core.xzm
+040eb93ce8ac24ecd03949523756457f  EXT/003-settings.xzm
+63864f6c6cf3c3b62362a2e6bce58a3f  EXT/004-wifi.xzm
+228f2e5e607a034941b6ce1f5be83429  EXT/initrd.xz
+ca068f460d8f4d8e270e44eb0de07e36  EXT/vmlinuz
 
 
-Files in ntfs-3g.tar.gz are from ntfs-3g_2021.8.22-2_amd64.deb and libntfs-3g89_2021.8.22-2_amd64.deb
-http://ftp.debian.org/debian/pool/main/n/ntfs-3g/ntfs-3g_2021.8.22-2_amd64.deb
-http://ftp.debian.org/debian/pool/main/n/ntfs-3g/libntfs-3g89_2021.8.22-2_amd64.deb
-
+Porteus Kiosk 5.5.0 follows the Gentoo portage snapshot tagged 20230318 (glibc 2.36-r5). Its 001-core.xzm already contains ntfs3g 2022.10.3's FUSE driver (libntfs-3g.so.89) and does not contain ntfsresize or ntfsfix. initrd.sh runs collect-ntfs3g.sh, which downloads the upstream tarball used by the Gentoo ebuild for that version (https://download.tuxera.com/opensource/ntfs-3g_ntfsprogs-2022.10.3.tgz) and builds static ntfsresize and ntfsfix. DejaVu fonts are already in 001-core.xzm. The separate 06-fonts.xzm used with Kiosk 5.2 is not part of this ISO, and the old public URL for it now returns 404.
 
 busybox-x86_64 is from https://busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-x86_64
 MD5SUM
 ea7e2353af0067a926d3e021e504290e  EXT/busybox-x86_64
-

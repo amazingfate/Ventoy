@@ -21,7 +21,6 @@ cp -a $VTOOLDIR/mount.exfat-fuse /bin/mount.exfat
 cp -a $VTOOLDIR/mkexfatfs /bin/mkfs.exfat
 
 /usr/local/sbin/busybox --install /usr/local/sbin/
-tar xf /usr/local/sbin/ntfs-3g.tar.gz -C /
 
 /ventoy/tool/x86_64/Ventoy2Disk.gtk3 --kiosk
 
