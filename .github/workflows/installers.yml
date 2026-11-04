@@ -1,6 +1,7 @@
 # Linux installer, Windows installer, and LiveCD ISO.
 # The Linux job uses a privileged Debian trixie container. The Windows job
-# builds Ventoy2Disk with the VS 2022 toolset on windows-2022.
+# builds Ventoy2Disk on windows-2022 with the newest MSVC toolset that the
+# selected Visual Studio actually ships.
 name: Installers
 
 on:
@@ -80,28 +81,50 @@ jobs:
           }
           Write-Host "xz-embedded ready: $src"
 
-      - name: Add MSBuild to PATH
-        uses: microsoft/setup-msbuild@v2
-
       - name: Build Ventoy2Disk Win32 Release
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $false
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          if (-not (Test-Path $vswhere)) { throw 'vswhere.exe was not found' }
+          $install = @(& $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath) |
+            Where-Object { $_ -and $_.Trim() } |
+            Select-Object -First 1
+          if ($LASTEXITCODE -ne 0 -or -not $install) { throw 'Visual C++ toolset was not found' }
+          $install = $install.Trim()
+          $msbuild = Join-Path $install 'MSBuild\Current\Bin\MSBuild.exe'
+          if (-not (Test-Path $msbuild)) { throw "MSBuild.exe was not found under $install" }
+          $names = @(Get-ChildItem -Path (Join-Path $install 'MSBuild\Microsoft\VC') -Recurse -Directory -Filter PlatformToolsets |
+            ForEach-Object { Get-ChildItem -Path $_.FullName -Directory } |
+            Where-Object { $_.Name -match '^v\d+$' } |
+            Select-Object -ExpandProperty Name)
+          $best = $null
+          $bestN = -1
+          foreach ($name in $names) {
+            $n = [int]($name -replace '\D', '')
+            if ($n -gt $bestN) { $bestN = $n; $best = $name }
+          }
+          if (-not $best) { throw "No MSVC platform toolset under $install" }
           $sdkRoot = "${env:ProgramFiles(x86)}\Windows Kits\10\Include"
           $sdk = Get-ChildItem -Path $sdkRoot -Directory |
             Where-Object { $_.Name -match '^10\.0\.\d+' } |
             Sort-Object Name -Descending |
             Select-Object -First 1 -ExpandProperty Name
           if (-not $sdk) { throw 'Windows 10 SDK was not found' }
+          Write-Host "MSBuild=$msbuild"
+          Write-Host "PlatformToolset=$best"
           Write-Host "WindowsTargetPlatformVersion=$sdk"
-          msbuild Ventoy2Disk\Ventoy2Disk.sln `
+          & $msbuild Ventoy2Disk\Ventoy2Disk.sln `
             /t:Build `
             /p:Configuration=Release `
             /p:Platform=Win32 `
-            /p:PlatformToolset=v143 `
+            /p:PlatformToolset=$best `
+            /p:LanguageStandard_C=stdc17 `
             /p:WindowsTargetPlatformVersion=$sdk `
             /m `
             /v:minimal
+          if ($LASTEXITCODE -ne 0) { throw "msbuild failed: $LASTEXITCODE" }
           $exe = Get-ChildItem -Path Ventoy2Disk -Recurse -Filter Ventoy2Disk.exe |
             Where-Object { $_.FullName -match '\\Release\\' } |
             Select-Object -First 1
