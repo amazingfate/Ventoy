@@ -1,0 +1,10 @@
+.cache/
+build/work/
+build/out/
+__pycache__/
+*.pyc
+GRUB2/SRC/
+GRUB2/INSTALL/
+GRUB2/NBP/
+GRUB2/PXE/
+EDK2/edk2-edk2-stable201911/
