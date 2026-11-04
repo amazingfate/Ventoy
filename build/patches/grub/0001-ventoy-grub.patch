@@ -2682,7 +2682,8 @@
 +  if (file->fs && file->fs->fs_close)
      (file->fs->fs_close) (file);
  
-  if (file->fs->mod)
+-  if (file->fs->mod)
++  if (file->fs && file->fs->mod)
 --- a/grub-core/kern/fs.c
 +++ b/grub-core/kern/fs.c
 @@ -27,6 +27,7 @@
