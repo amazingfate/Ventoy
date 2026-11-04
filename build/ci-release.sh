@@ -139,10 +139,34 @@ if [ -z "${part2_start_sector:-}" ]; then
     exit 1
 fi
 
-"$ROOT/build/out/prefix-i386-pc/sbin/grub-bios-setup" \
-    --skip-fs-probe \
-    --directory="$stage/bios/i386-pc" \
-    "$LOOP"
+# grub-bios-setup resolves the host directory to a block device. In Docker
+# that directory is overlay or tmpfs, and the call exits 1 with
+# "failed to get canonical path". grub-mkimage already points boot.img at
+# sector 1 and core.img's block list at sector 2, which is the embedding gap
+# before partition 1. Copy those bytes in and keep the partition table.
+python3 - "$LOOP" "$stage/bios/i386-pc/boot.img" "$stage/bios/i386-pc/core.img" <<'PY'
+import os, sys
+dev, boot, core = sys.argv[1:]
+b = bytearray(open(boot, "rb").read())
+c = open(core, "rb").read()
+if len(b) != 512:
+    raise SystemExit("boot.img is not 512 bytes")
+if len(c) > 2047 * 512:
+    raise SystemExit("core.img does not fit in the embedding gap")
+fd = os.open(dev, os.O_RDWR)
+old = os.pread(fd, 512, 0)
+# Same hard-disk drive-check NOP and BPB/partition preservation as
+# grub-bios-setup. Bytes 0x1fe-0x1ff stay the boot.img signature.
+b[0x03:0x5a] = old[0x03:0x5a]
+b[0x66] = 0x90
+b[0x67] = 0x90
+b[0x1b8:0x1fe] = old[0x1b8:0x1fe]
+os.pwrite(fd, bytes(b), 0)
+os.pwrite(fd, c, 512)
+os.fsync(fd)
+os.close(fd)
+print("BIOS boot sector installed")
+PY
 
 mnt=$ROOT/build/out/ci-pack/mnt
 rm -rf "$mnt"
@@ -150,9 +174,8 @@ mkdir -p "$mnt"
 mount "${LOOP}p2" "$mnt"
 
 mkdir -p "$mnt/grub"
-cp -a "$stage/grub/grub.cfg" "$mnt/grub/"
-# vfat rejects owner preservation. The copy still writes the files.
-cp -a "$stage/grub/." "$mnt/grub/" || true
+# vfat has no Unix owners. cp -a then exits 1 even though the bytes were written.
+cp -a --no-preserve=ownership "$stage/grub/." "$mnt/grub/"
 test -f "$mnt/grub/grub.cfg"
 test -f "$mnt/grub/i386-pc/normal.mod"
 test -f "$mnt/grub/x86_64-efi/normal.mod"
@@ -182,8 +205,8 @@ test -f "$mnt/grub/help.tar.gz"
 test -f "$mnt/grub/menu.tar.gz"
 rm -f "$mnt/grub/i386-pc/"*.img
 
-cp -a "$ROOT/INSTALL/ventoy" "$mnt/" || true
-cp -a "$ROOT/INSTALL/EFI" "$mnt/" || true
+cp -a --no-preserve=ownership "$ROOT/INSTALL/ventoy" "$mnt/"
+cp -a --no-preserve=ownership "$ROOT/INSTALL/EFI" "$mnt/"
 test -f "$mnt/EFI/BOOT/BOOTX64.EFI"
 test -f "$mnt/EFI/BOOT/grubx64_real.efi"
 test -f "$mnt/EFI/BOOT/fbx64.efi"
@@ -193,8 +216,10 @@ mkdir -p "$mnt/tool"
 dd status=none bs=1024 count=16 if="$ROOT/INSTALL/tool/i386/vtoycli" of="$mnt/tool/mount.exfat-fuse_i386"
 dd status=none bs=1024 count=16 if="$ROOT/INSTALL/tool/x86_64/vtoycli" of="$mnt/tool/mount.exfat-fuse_x86_64"
 dd status=none bs=1024 count=16 if="$ROOT/INSTALL/tool/aarch64/vtoycli" of="$mnt/tool/mount.exfat-fuse_aarch64"
-cp -a "$ROOT/INSTALL/tool/create_ventoy_iso_part_dm.sh" "$mnt/tool/"
-cp -a "$ROOT/INSTALL/tool/ENROLL_THIS_KEY_IN_MOKMANAGER.cer" "$mnt/" || true
+cp -a --no-preserve=ownership "$ROOT/INSTALL/tool/create_ventoy_iso_part_dm.sh" "$mnt/tool/"
+if [ -f "$ROOT/INSTALL/tool/ENROLL_THIS_KEY_IN_MOKMANAGER.cer" ]; then
+    cp -a --no-preserve=ownership "$ROOT/INSTALL/tool/ENROLL_THIS_KEY_IN_MOKMANAGER.cer" "$mnt/"
+fi
 
 # Secure Boot signing stays off unless VENTOY_CERT_KEY and VENTOY_CERT_PEM
 # are provided. The placeholder in fbx64.efi still has to become the hash of
