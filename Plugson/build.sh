@@ -1,5 +1,8 @@
 #!/bin/bash
 
+ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
+XZDIR=$("$ROOT/build/prepare-xz-embedded.sh")
+
 if [ "$1" = "sim" ]; then
     exopt="-DVENTOY_SIM"
 fi
@@ -30,9 +33,9 @@ build_func() {
         -I./src/Include \
         -I./src/Lib/libhttp/include \
         -I./src/Lib/fat_io_lib/include \
-        -I./src/Lib/xz-embedded/linux/include \
-        -I./src/Lib/xz-embedded/linux/include/linux \
-        -I./src/Lib/xz-embedded/userspace \
+        -I"$XZDIR/linux/include" \
+        -I"$XZDIR/linux/include/linux" \
+        -I"$XZDIR/userspace" \
         -I ./src/Lib/exfat/src/libexfat \
         -I ./src/Lib/exfat/src/mkfs \
         -I ./src/Lib/fat_io_lib \
@@ -49,7 +52,7 @@ build_func() {
         src/Core/ventoy_util.c \
         src/Core/ventoy_util_linux.c \
         src/Web/*.c \
-        src/Lib/xz-embedded/linux/lib/decompress_unxz.c \
+        "$XZDIR/linux/lib/decompress_unxz.c" \
         src/Lib/fat_io_lib/*.c \
         $XXLIB \
         -l pthread \

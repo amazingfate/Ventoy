@@ -172,10 +172,10 @@ void ventoy_gen_preudo_uuid(void *uuid);
 uint64_t ventoy_get_human_readable_gb(uint64_t SizeBytes);
 void ventoy_md5(const void *data, uint32_t len, uint8_t *md5);
 int ventoy_is_disk_mounted(const char *devpath);
-int unxz(unsigned char *in, int in_size,
-	 int (*fill)(void *dest, unsigned int size),
-	 int (*flush)(void *src, unsigned int size),
-	 unsigned char *out, int *in_used,
+int unxz(unsigned char *in, long in_size,
+	 long (*fill)(void *dest, unsigned long size),
+	 long (*flush)(void *src, unsigned long size),
+	 unsigned char *out, long *in_used,
 	 void (*error)(char *x));
 int ventoy_read_file_to_buf(const char *FileName, int ExtLen, void **Bufer, int *BufLen);
 int ventoy_write_buf_to_file(const char *FileName, void *Bufer, int BufLen);
@@ -198,7 +198,7 @@ void ventoy_set_writeback_event(void);
 extern unsigned char *g_unxz_buffer;
 extern int g_unxz_len;
 void unxz_error(char *x);
-int unxz_flush(void *src, unsigned int size);
+long unxz_flush(void *src, unsigned long size);
 char * ventoy_base64_encode(const char *data, int input_length, int *output_length);
 size_t utf8_to_utf16(const unsigned char * utf8, size_t utf8_len, unsigned short* utf16, size_t utf16_len);
 

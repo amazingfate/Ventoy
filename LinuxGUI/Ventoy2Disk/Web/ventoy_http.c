@@ -78,19 +78,19 @@ static int ventoy_load_mbr_template(void)
     return 0;
 }
 
-static int ventoy_disk_xz_flush(void *src, unsigned int size)
+static long ventoy_disk_xz_flush(void *src, unsigned long size)
 {
     memcpy(g_efi_part_raw_img + g_efi_part_offset, src, size);
     g_efi_part_offset += size;
 
     g_current_progress = PT_LOAD_DISK_IMG + (g_efi_part_offset / SIZE_1MB);
-    return (int)size;
+    return (long)size;
 }
 
 static int ventoy_unxz_efipart_img(void)
 {
     int rc;
-    int inlen;
+    long inlen;
     int xzlen;
     void *xzbuf = NULL;
     uint8_t *buf = NULL;
@@ -116,7 +116,7 @@ static int ventoy_unxz_efipart_img(void)
     g_efi_part_raw_img = buf;
     
     rc = unxz(xzbuf, xzlen, NULL, ventoy_disk_xz_flush, buf, &inlen, NULL);
-    vdebug("ventoy_unxz_efipart_img len:%d rc:%d unxzlen:%u\n", inlen, rc, g_efi_part_offset);
+    vdebug("ventoy_unxz_efipart_img len:%ld rc:%d unxzlen:%u\n", inlen, rc, g_efi_part_offset);
 
     check_free(xzbuf);
     return 0;
@@ -125,7 +125,7 @@ static int ventoy_unxz_efipart_img(void)
 static int ventoy_unxz_stg1_img(void)
 {
     int rc;
-    int inlen;
+    long inlen;
     int xzlen;
     void *xzbuf = NULL;
     uint8_t *buf = NULL;
@@ -148,7 +148,7 @@ static int ventoy_unxz_stg1_img(void)
     }
     
     rc = unxz(xzbuf, xzlen, NULL, NULL, buf, &inlen, NULL);
-    vdebug("ventoy_unxz_stg1_img len:%d rc:%d\n", inlen, rc);
+    vdebug("ventoy_unxz_stg1_img len:%ld rc:%d\n", inlen, rc);
 
     g_grub_stg1_raw_img = buf;
 

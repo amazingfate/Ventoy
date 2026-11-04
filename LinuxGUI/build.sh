@@ -1,5 +1,8 @@
 #!/bin/bash
 
+ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
+XZDIR=$("$ROOT/build/prepare-xz-embedded.sh")
+
 build_func() {    
     libsuffix=$2
     toolDir=$3
@@ -24,9 +27,9 @@ build_func() {
         -I./Ventoy2Disk/Include \
         -I./Ventoy2Disk/Lib/libhttp/include \
         -I./Ventoy2Disk/Lib/fat_io_lib/include \
-        -I./Ventoy2Disk/Lib/xz-embedded/linux/include \
-        -I./Ventoy2Disk/Lib/xz-embedded/linux/include/linux \
-        -I./Ventoy2Disk/Lib/xz-embedded/userspace \
+        -I"$XZDIR/linux/include" \
+        -I"$XZDIR/linux/include/linux" \
+        -I"$XZDIR/userspace" \
         -I ./Ventoy2Disk/Lib/exfat/src/libexfat \
         -I ./Ventoy2Disk/Lib/exfat/src/mkfs \
         -I ./Ventoy2Disk/Lib/fat_io_lib \
@@ -35,7 +38,7 @@ build_func() {
         Ventoy2Disk/main_webui.c \
         Ventoy2Disk/Core/*.c \
         Ventoy2Disk/Web/*.c \
-        Ventoy2Disk/Lib/xz-embedded/linux/lib/decompress_unxz.c \
+        "$XZDIR/linux/lib/decompress_unxz.c" \
         Ventoy2Disk/Lib/exfat/src/libexfat/*.c \
         Ventoy2Disk/Lib/exfat/src/mkfs/*.c \
         Ventoy2Disk/Lib/fat_io_lib/*.c \

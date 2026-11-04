@@ -41,10 +41,10 @@ uint64_t ventoy_get_human_readable_gb(uint64_t SizeBytes);
 void ventoy_md5(const void *data, uint32_t len, uint8_t *md5);
 int ventoy_is_disk_mounted(const char *devpath);
 int ventoy_try_umount_disk(const char *devpath);
-int unxz(unsigned char *in, int in_size,
-	 int (*fill)(void *dest, unsigned int size),
-	 int (*flush)(void *src, unsigned int size),
-	 unsigned char *out, int *in_used,
+int unxz(unsigned char *in, long in_size,
+	 long (*fill)(void *dest, unsigned long size),
+	 long (*flush)(void *src, unsigned long size),
+	 unsigned char *out, long *in_used,
 	 void (*error)(char *x));
 int ventoy_read_file_to_buf(const char *FileName, int ExtLen, void **Bufer, int *BufLen);
 const char * ventoy_get_local_version(void);

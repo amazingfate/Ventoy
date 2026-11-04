@@ -273,10 +273,10 @@ int VentoyFillWholeGpt(UINT64 DiskSizeBytes, VTOY_GPT_INFO *pInfo);
 void SetProgressBarPos(int Pos);
 int SaveBufToFile(const CHAR *FileName, const void *Buffer, int BufLen);
 int ReadWholeFileToBuf(const CHAR *FileName, int ExtLen, void **Bufer, int *BufLen);
-int INIT unxz(unsigned char *in, int in_size,
-    int(*fill)(void *dest, unsigned int size),
-    int(*flush)(void *src, unsigned int size),
-    unsigned char *out, int *in_used,
+int INIT unxz(unsigned char *in, long in_size,
+    long(*fill)(void *dest, unsigned long size),
+    long(*flush)(void *src, unsigned long size),
+    unsigned char *out, long *in_used,
     void(*error)(char *x));
 void disk_io_set_param(HANDLE Handle, UINT64 SectorCount);
 int GetVolumeClusterSize(char Drive);

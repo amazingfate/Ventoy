@@ -1389,18 +1389,18 @@ static void unxz_error(char *x)
     Log("%s", x);
 }
 
-static int unxz_flush(void *src, unsigned int size)
+static long unxz_flush(void *src, unsigned long size)
 {
     memcpy(g_unxz_buffer + g_unxz_len, src, size);
     g_unxz_len += (int)size;
 
-    return (int)size;
+    return (long)size;
 }
 
 static int DecompressInjectionArchive(const char *archive, DWORD PhyDrive)
 {
     int rc = 1;
-    int writelen = 0;
+    long writelen = 0;
     UCHAR *Buffer = NULL;
     UCHAR *RawBuffer = NULL;
     BOOL bRet;

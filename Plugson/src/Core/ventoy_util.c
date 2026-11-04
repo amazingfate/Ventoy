@@ -36,12 +36,12 @@ void unxz_error(char *x)
 	vlog("%s\n", x);
 }
 
-int unxz_flush(void *src, unsigned int size)
+long unxz_flush(void *src, unsigned long size)
 {
 	memcpy(g_unxz_buffer + g_unxz_len, src, size);
 	g_unxz_len += (int)size;
 
-	return (int)size;
+	return (long)size;
 }
 
 
@@ -107,7 +107,7 @@ ventoy_file * ventoy_tar_find_file(const char *path)
 int ventoy_decompress_tar(char *tarbuf, int buflen, int *tarsize)
 {
     int rc = 1;
-	int inused = 0;
+	long inused = 0;
 	int BufLen = 0;
 	unsigned char *buffer = NULL;
     char tarxz[MAX_PATH];
@@ -132,7 +132,7 @@ int ventoy_decompress_tar(char *tarbuf, int buflen, int *tarsize)
 
     if (inused != BufLen)
     {
-        vlog("Failed to unxz data %d %d\n", inused, BufLen);
+        vlog("Failed to unxz data %ld %d\n", inused, BufLen);
         rc = 1;
     }
     else

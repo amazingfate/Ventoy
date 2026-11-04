@@ -1026,7 +1026,7 @@ int VentoyProcSecureBoot(BOOL SecureBoot)
 
 
 
-static int disk_xz_flush(void *src, unsigned int size)
+static long disk_xz_flush(void *src, unsigned long size)
 {
     unsigned int i;
     BYTE *buf = (BYTE *)src;
@@ -1046,7 +1046,7 @@ static int disk_xz_flush(void *src, unsigned int size)
         }
     }
 
-    return (int)size;
+    return (long)size;
 }
 
 static void unxz_error(char *x)
@@ -1087,7 +1087,7 @@ static int FormatPart2Fat(HANDLE hDrive, UINT64 StartSectorId)
     int i;
     int rc = 0;
     int len = 0;
-    int writelen = 0;
+    long writelen = 0;
     int partwrite = 0;
     int Pos = PT_WRITE_VENTOY_START;
     DWORD dwSize = 0;
@@ -1724,7 +1724,7 @@ int InstallVentoy2FileImage(PHY_DRIVE_INFO *pPhyDrive, int PartStyle)
     int i;
     int rc = 1;
     int Len = 0;
-    int dataLen = 0;
+    long dataLen = 0;
     UINT size = 0;
     UINT segnum = 0;
     UINT32 chksum = 0;

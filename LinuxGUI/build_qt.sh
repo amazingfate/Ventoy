@@ -1,5 +1,8 @@
 #!/bin/bash
 
+ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
+XZDIR=$("$ROOT/build/prepare-xz-embedded.sh")
+
 force_copy() {
     [ -e "$2" ] && rm -f "$2"
     cp -a "$1" "$2"
@@ -18,9 +21,9 @@ compile_file() {
         -I./Ventoy2Disk/Include \
         -I./Ventoy2Disk/Lib/libhttp/include \
         -I./Ventoy2Disk/Lib/fat_io_lib/include \
-        -I./Ventoy2Disk/Lib/xz-embedded/linux/include \
-        -I./Ventoy2Disk/Lib/xz-embedded/linux/include/linux \
-        -I./Ventoy2Disk/Lib/xz-embedded/userspace \
+        -I"$XZDIR/linux/include" \
+        -I"$XZDIR/linux/include/linux" \
+        -I"$XZDIR/userspace" \
         -I ./Ventoy2Disk/Lib/exfat/src/libexfat \
         -I ./Ventoy2Disk/Lib/exfat/src/mkfs \
         -I ./Ventoy2Disk/Lib/fat_io_lib \
@@ -41,7 +44,7 @@ compile_lib() {
     compile_dir ./Ventoy2Disk/Lib/exfat/src/libexfat  "$1"
     compile_dir ./Ventoy2Disk/Lib/exfat/src/mkfs  "$1"
     compile_dir ./Ventoy2Disk/Lib/fat_io_lib  "$1"
-    compile_file "$1" Ventoy2Disk/Lib/xz-embedded/linux/lib/decompress_unxz.c
+    compile_file "$1" "$XZDIR/linux/lib/decompress_unxz.c"
 
     rm -f libVentoyQT_$3.a
     $2 -rcs libVentoyQT_$3.a *.o
@@ -73,7 +76,7 @@ build_qt_app() {
     
     DEFINES="-DQT_CHECK_EUID -DQT_DEPRECATED_WARNINGS -DSTATIC=static -DINIT= -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB"
     CXXFLAGS="-pipe -O2 -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $DEFINES -Wno-deprecated-declarations -Wno-deprecated-copy"
-    INCPATH=" -I./Ventoy2Disk -I. -I./Ventoy2Disk/Core -I./Ventoy2Disk/Web -I./Ventoy2Disk/QT -I./Ventoy2Disk/QT/build -I./Ventoy2Disk/Include -I./Ventoy2Disk/Lib/libhttp/include -I./Ventoy2Disk/Lib/fat_io_lib/include -I./Ventoy2Disk/Lib/xz-embedded/linux/include -I./Ventoy2Disk/Lib/xz-embedded/linux/include/linux -I./Ventoy2Disk/Lib/xz-embedded/userspace -I./Ventoy2Disk/Lib/exfat/src/libexfat -I./Ventoy2Disk/Lib/fat_io_lib -I$QT_INC_PATH -I$QT_INC_PATH/QtWidgets -I$QT_INC_PATH/QtGui -I$QT_INC_PATH/QtCore -I. -I."
+    INCPATH=" -I./Ventoy2Disk -I. -I./Ventoy2Disk/Core -I./Ventoy2Disk/Web -I./Ventoy2Disk/QT -I./Ventoy2Disk/QT/build -I./Ventoy2Disk/Include -I./Ventoy2Disk/Lib/libhttp/include -I./Ventoy2Disk/Lib/fat_io_lib/include -I$XZDIR/linux/include -I$XZDIR/linux/include/linux -I$XZDIR/userspace -I./Ventoy2Disk/Lib/exfat/src/libexfat -I./Ventoy2Disk/Lib/fat_io_lib -I$QT_INC_PATH -I$QT_INC_PATH/QtWidgets -I$QT_INC_PATH/QtGui -I$QT_INC_PATH/QtCore -I. -I."
 
     SUBLIBS="./libVentoyQT_${2}.a"
     LIBS="$SUBLIBS $QT_LIB_PATH/libQt5Widgets.so $QT_LIB_PATH/libQt5Gui.so $QT_LIB_PATH/libQt5Core.so -lpthread"
@@ -87,7 +90,7 @@ build_qt_i386() {
     QT_LIB_PATH="./EXLIB/i386/usr/lib/i386-linux-gnu"
     DEFINES="-DQT_CHECK_EUID -DQT_DEPRECATED_WARNINGS -DSTATIC=static -DINIT= -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB"
     CXXFLAGS="-pipe -O2 -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $DEFINES -Wno-deprecated-declarations"
-    INCPATH=" -I./Ventoy2Disk -I. -I./Ventoy2Disk/Core -I./Ventoy2Disk/Web -I./Ventoy2Disk/QT -I./Ventoy2Disk/QT/build -I./Ventoy2Disk/Include -I./Ventoy2Disk/Lib/libhttp/include -I./Ventoy2Disk/Lib/fat_io_lib/include -I./Ventoy2Disk/Lib/xz-embedded/linux/include -I./Ventoy2Disk/Lib/xz-embedded/linux/include/linux -I./Ventoy2Disk/Lib/xz-embedded/userspace -I./Ventoy2Disk/Lib/exfat/src/libexfat -I./Ventoy2Disk/Lib/fat_io_lib -I$QT_INC_PATH -I$QT_INC_PATH/QtWidgets -I$QT_INC_PATH/QtGui -I$QT_INC_PATH/QtCore -I."
+    INCPATH=" -I./Ventoy2Disk -I. -I./Ventoy2Disk/Core -I./Ventoy2Disk/Web -I./Ventoy2Disk/QT -I./Ventoy2Disk/QT/build -I./Ventoy2Disk/Include -I./Ventoy2Disk/Lib/libhttp/include -I./Ventoy2Disk/Lib/fat_io_lib/include -I$XZDIR/linux/include -I$XZDIR/linux/include/linux -I$XZDIR/userspace -I./Ventoy2Disk/Lib/exfat/src/libexfat -I./Ventoy2Disk/Lib/fat_io_lib -I$QT_INC_PATH -I$QT_INC_PATH/QtWidgets -I$QT_INC_PATH/QtGui -I$QT_INC_PATH/QtCore -I."
     LFLAGS="-Wl,-O1 -Wl,-rpath-link,$QT_LIB_PATH  -L$QT_LIB_PATH -Wl,-rpath-link,./EXLIB/i386/lib/i386-linux-gnu -L./EXLIB/i386/lib/i386-linux-gnu"
     SUBLIBS="./libVentoyQT_i386.a"
     LIBS="$SUBLIBS $QT_LIB_PATH/libQt5Widgets.so $QT_LIB_PATH/libQt5Gui.so $QT_LIB_PATH/libQt5Core.so -lpthread"
@@ -128,7 +131,7 @@ build_qt_mips64el() {
     QT_LIB_PATH="./EXLIB/mips64el/usr/lib/mips64el-linux-gnuabi64"
     DEFINES="-DQT_CHECK_EUID -DQT_DEPRECATED_WARNINGS -DSTATIC=static -DINIT= -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB"
     CXXFLAGS="-pipe -O2 -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $DEFINES -Wno-deprecated-declarations"
-    INCPATH=" -I./Ventoy2Disk -I. -I./Ventoy2Disk/Core -I./Ventoy2Disk/Web -I./Ventoy2Disk/QT -I./Ventoy2Disk/QT/build -I./Ventoy2Disk/Include -I./Ventoy2Disk/Lib/libhttp/include -I./Ventoy2Disk/Lib/fat_io_lib/include -I./Ventoy2Disk/Lib/xz-embedded/linux/include -I./Ventoy2Disk/Lib/xz-embedded/linux/include/linux -I./Ventoy2Disk/Lib/xz-embedded/userspace -I./Ventoy2Disk/Lib/exfat/src/libexfat -I./Ventoy2Disk/Lib/fat_io_lib -I$QT_INC_PATH -I$QT_INC_PATH/QtWidgets -I$QT_INC_PATH/QtGui -I$QT_INC_PATH/QtCore -I."
+    INCPATH=" -I./Ventoy2Disk -I. -I./Ventoy2Disk/Core -I./Ventoy2Disk/Web -I./Ventoy2Disk/QT -I./Ventoy2Disk/QT/build -I./Ventoy2Disk/Include -I./Ventoy2Disk/Lib/libhttp/include -I./Ventoy2Disk/Lib/fat_io_lib/include -I$XZDIR/linux/include -I$XZDIR/linux/include/linux -I$XZDIR/userspace -I./Ventoy2Disk/Lib/exfat/src/libexfat -I./Ventoy2Disk/Lib/fat_io_lib -I$QT_INC_PATH -I$QT_INC_PATH/QtWidgets -I$QT_INC_PATH/QtGui -I$QT_INC_PATH/QtCore -I."
     LFLAGS="-Wl,-O1 -Wl,-rpath-link,$QT_LIB_PATH  -L$QT_LIB_PATH -Wl,-rpath-link,./EXLIB/mips64el/lib/mips64el-linux-gnuabi64 -L./EXLIB/mips64el/lib/mips64el-linux-gnuabi64"
     SUBLIBS="./libVentoyQT_mips64el.a"
     LIBS="$SUBLIBS $QT_LIB_PATH/libQt5Widgets.so $QT_LIB_PATH/libQt5Gui.so $QT_LIB_PATH/libQt5Core.so -lpthread"

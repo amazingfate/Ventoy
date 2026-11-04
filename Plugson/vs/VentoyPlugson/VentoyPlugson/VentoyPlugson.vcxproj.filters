@@ -69,7 +69,7 @@
     <ClCompile Include="..\..\..\src\Web\ventoy_http.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\Lib\xz-embedded\linux\lib\decompress_unxz.c">
+    <ClCompile Include="..\..\..\..\.cache\upstream\xz-embedded\linux\lib\decompress_unxz.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\main_windows.c">

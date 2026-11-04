@@ -47,7 +47,7 @@ SOURCES += \
     Lib/fat_io_lib/fat_string.c \
     Lib/fat_io_lib/fat_table.c \
     Lib/fat_io_lib/fat_write.c \
-    Lib/xz-embedded/linux/lib/decompress_unxz.c \
+    $$PWD/../../../.cache/upstream/xz-embedded/linux/lib/decompress_unxz.c \
     QT/refresh_icon_data.c \
     QT/secure_icon_data.c \
     QT/ventoy_qt_stub.c \
@@ -123,9 +123,9 @@ INCLUDEPATH +=/home/panda/Ventoy2Disk/QT
 INCLUDEPATH +=/home/panda/Ventoy2Disk/Include
 INCLUDEPATH +=/home/panda/Ventoy2Disk/Lib/libhttp/include
 INCLUDEPATH +=/home/panda/Ventoy2Disk/Lib/fat_io_lib/include
-INCLUDEPATH +=/home/panda/Ventoy2Disk/Lib/xz-embedded/linux/include
-INCLUDEPATH +=/home/panda/Ventoy2Disk/Lib/xz-embedded/linux/include/linux
-INCLUDEPATH +=/home/panda/Ventoy2Disk/Lib/xz-embedded/userspace
+INCLUDEPATH +=$$PWD/../../../.cache/upstream/xz-embedded/linux/include
+INCLUDEPATH +=$$PWD/../../../.cache/upstream/xz-embedded/linux/include/linux
+INCLUDEPATH +=$$PWD/../../../.cache/upstream/xz-embedded/userspace
 INCLUDEPATH +=/home/panda/Ventoy2Disk/Lib/exfat/src/libexfat
 INCLUDEPATH +=/home/panda/Ventoy2Disk/Lib/fat_io_lib
 #INCLUDEPATH +=/usr/src/linux-headers-5.10.18-amd64-desktop/include

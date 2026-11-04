@@ -15,7 +15,7 @@ CXX           = g++
 DEFINES       = -DQT_DEPRECATED_WARNINGS -DSTATIC=static -DINIT= -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -O2 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -O2 -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
-INCPATH       = -I../Ventoy2Disk -I. -I../../Ventoy2Disk/Core -I../../Ventoy2Disk/Web -I../../Ventoy2Disk/QT -I../../Ventoy2Disk/Include -I../../Ventoy2Disk/Lib/libhttp/include -I/home/panda/Ventoy2Disk/Lib/fat_io_lib/include -I../../Ventoy2Disk/Lib/xz-embedded/linux/include -I../../Ventoy2Disk/Lib/xz-embedded/linux/include/linux -I../../Ventoy2Disk/Lib/xz-embedded/userspace -I../../Ventoy2Disk/Lib/exfat/src/libexfat -I../../Ventoy2Disk/Lib/fat_io_lib -I../../Qt5.9.0/5.9/gcc_64/include -I../../Qt5.9.0/5.9/gcc_64/include/QtWidgets -I../../Qt5.9.0/5.9/gcc_64/include/QtGui -I../../Qt5.9.0/5.9/gcc_64/include/QtCore -I. -isystem /usr/include/libdrm -I. -I../../Qt5.9.0/5.9/gcc_64/mkspecs/linux-g++
+INCPATH       = -I../Ventoy2Disk -I. -I../../Ventoy2Disk/Core -I../../Ventoy2Disk/Web -I../../Ventoy2Disk/QT -I../../Ventoy2Disk/Include -I../../Ventoy2Disk/Lib/libhttp/include -I/home/panda/Ventoy2Disk/Lib/fat_io_lib/include -I../../../../.cache/upstream/xz-embedded/linux/include -I../../../../.cache/upstream/xz-embedded/linux/include/linux -I../../../../.cache/upstream/xz-embedded/userspace -I../../Ventoy2Disk/Lib/exfat/src/libexfat -I../../Ventoy2Disk/Lib/fat_io_lib -I../../Qt5.9.0/5.9/gcc_64/include -I../../Qt5.9.0/5.9/gcc_64/include/QtWidgets -I../../Qt5.9.0/5.9/gcc_64/include/QtGui -I../../Qt5.9.0/5.9/gcc_64/include/QtCore -I. -isystem /usr/include/libdrm -I. -I../../Qt5.9.0/5.9/gcc_64/mkspecs/linux-g++
 QMAKE         = /home/panda/Qt5.9.0/5.9/gcc_64/bin/qmake
 DEL_FILE      = rm -f
 CHK_DIR_EXISTS= test -d
@@ -82,7 +82,7 @@ SOURCES       = ../Ventoy2Disk/Core/ventoy_crc32.c \
 		../Ventoy2Disk/Lib/fat_io_lib/fat_string.c \
 		../Ventoy2Disk/Lib/fat_io_lib/fat_table.c \
 		../Ventoy2Disk/Lib/fat_io_lib/fat_write.c \
-		../Ventoy2Disk/Lib/xz-embedded/linux/lib/decompress_unxz.c \
+		../../../.cache/upstream/xz-embedded/linux/lib/decompress_unxz.c \
 		../Ventoy2Disk/QT/refresh_icon_data.c \
 		../Ventoy2Disk/QT/secure_icon_data.c \
 		../Ventoy2Disk/QT/ventoy_qt_stub.c \
@@ -375,7 +375,7 @@ DIST          = ../Ventoy2Disk/Lib/fat_io_lib/API.txt \
 		../Ventoy2Disk/Lib/fat_io_lib/fat_string.c \
 		../Ventoy2Disk/Lib/fat_io_lib/fat_table.c \
 		../Ventoy2Disk/Lib/fat_io_lib/fat_write.c \
-		../Ventoy2Disk/Lib/xz-embedded/linux/lib/decompress_unxz.c \
+		../../../.cache/upstream/xz-embedded/linux/lib/decompress_unxz.c \
 		../Ventoy2Disk/QT/refresh_icon_data.c \
 		../Ventoy2Disk/QT/secure_icon_data.c \
 		../Ventoy2Disk/QT/ventoy_qt_stub.c \
@@ -747,7 +747,7 @@ distdir: FORCE
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents ../../Qt5.9.0/5.9/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents ../Ventoy2Disk/Core/ventoy_define.h ../Ventoy2Disk/Core/ventoy_disk.h ../Ventoy2Disk/Core/ventoy_json.h ../Ventoy2Disk/Core/ventoy_util.h ../Ventoy2Disk/Include/Ventoy2Disk.h ../Ventoy2Disk/Lib/exfat/src/libexfat/byteorder.h ../Ventoy2Disk/Lib/exfat/src/libexfat/compiler.h ../Ventoy2Disk/Lib/exfat/src/libexfat/config.h ../Ventoy2Disk/Lib/exfat/src/libexfat/exfat.h ../Ventoy2Disk/Lib/exfat/src/libexfat/exfatfs.h ../Ventoy2Disk/Lib/exfat/src/libexfat/platform.h ../Ventoy2Disk/Lib/exfat/src/mkfs/cbm.h ../Ventoy2Disk/Lib/exfat/src/mkfs/fat.h ../Ventoy2Disk/Lib/exfat/src/mkfs/mkexfat.h ../Ventoy2Disk/Lib/exfat/src/mkfs/rootdir.h ../Ventoy2Disk/Lib/exfat/src/mkfs/uct.h ../Ventoy2Disk/Lib/exfat/src/mkfs/uctc.h ../Ventoy2Disk/Lib/exfat/src/mkfs/vbr.h ../Ventoy2Disk/Lib/fat_io_lib/fat_access.h ../Ventoy2Disk/Lib/fat_io_lib/fat_cache.h ../Ventoy2Disk/Lib/fat_io_lib/fat_defs.h ../Ventoy2Disk/Lib/fat_io_lib/fat_filelib.h ../Ventoy2Disk/Lib/fat_io_lib/fat_format.h ../Ventoy2Disk/Lib/fat_io_lib/fat_list.h ../Ventoy2Disk/Lib/fat_io_lib/fat_misc.h ../Ventoy2Disk/Lib/fat_io_lib/fat_opts.h ../Ventoy2Disk/Lib/fat_io_lib/fat_string.h ../Ventoy2Disk/Lib/fat_io_lib/fat_table.h ../Ventoy2Disk/Lib/fat_io_lib/fat_types.h ../Ventoy2Disk/Lib/fat_io_lib/fat_write.h ../Ventoy2Disk/Lib/libhttp/include/civetweb.h ../Ventoy2Disk/Lib/libhttp/include/handle_form.inl ../Ventoy2Disk/Lib/libhttp/include/md5.inl ../Ventoy2Disk/Lib/libhttp/include/mod_duktape.inl ../Ventoy2Disk/Lib/libhttp/include/mod_lua.inl ../Ventoy2Disk/Lib/libhttp/include/timer.inl ../Ventoy2Disk/QT/ventoy_qt.h ../Ventoy2Disk/Web/ventoy_http.h ../Ventoy2Disk/partcfgdialog.h ../Ventoy2Disk/ventoy2diskwindow.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../Ventoy2Disk/Core/ventoy_crc32.c ../Ventoy2Disk/Core/ventoy_disk.c ../Ventoy2Disk/Core/ventoy_json.c ../Ventoy2Disk/Core/ventoy_log.c ../Ventoy2Disk/Core/ventoy_md5.c ../Ventoy2Disk/Core/ventoy_util.c ../Ventoy2Disk/Lib/exfat/src/libexfat/cluster.c ../Ventoy2Disk/Lib/exfat/src/libexfat/io.c ../Ventoy2Disk/Lib/exfat/src/libexfat/lookup.c ../Ventoy2Disk/Lib/exfat/src/libexfat/mount.c ../Ventoy2Disk/Lib/exfat/src/libexfat/node.c ../Ventoy2Disk/Lib/exfat/src/libexfat/repair.c ../Ventoy2Disk/Lib/exfat/src/libexfat/time.c ../Ventoy2Disk/Lib/exfat/src/libexfat/utf.c ../Ventoy2Disk/Lib/exfat/src/libexfat/utils.c ../Ventoy2Disk/Lib/exfat/src/mkfs/cbm.c ../Ventoy2Disk/Lib/exfat/src/mkfs/fat.c ../Ventoy2Disk/Lib/exfat/src/mkfs/mkexfat.c ../Ventoy2Disk/Lib/exfat/src/mkfs/mkexfat_main.c ../Ventoy2Disk/Lib/exfat/src/mkfs/rootdir.c ../Ventoy2Disk/Lib/exfat/src/mkfs/uct.c ../Ventoy2Disk/Lib/exfat/src/mkfs/uctc.c ../Ventoy2Disk/Lib/exfat/src/mkfs/vbr.c ../Ventoy2Disk/Lib/fat_io_lib/fat_access.c ../Ventoy2Disk/Lib/fat_io_lib/fat_cache.c ../Ventoy2Disk/Lib/fat_io_lib/fat_filelib.c ../Ventoy2Disk/Lib/fat_io_lib/fat_format.c ../Ventoy2Disk/Lib/fat_io_lib/fat_misc.c ../Ventoy2Disk/Lib/fat_io_lib/fat_string.c ../Ventoy2Disk/Lib/fat_io_lib/fat_table.c ../Ventoy2Disk/Lib/fat_io_lib/fat_write.c ../Ventoy2Disk/Lib/xz-embedded/linux/lib/decompress_unxz.c ../Ventoy2Disk/QT/refresh_icon_data.c ../Ventoy2Disk/QT/secure_icon_data.c ../Ventoy2Disk/QT/ventoy_qt_stub.c ../Ventoy2Disk/Web/ventoy_http.c ../Ventoy2Disk/main.cpp ../Ventoy2Disk/partcfgdialog.cpp ../Ventoy2Disk/ventoy2diskwindow.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../Ventoy2Disk/Core/ventoy_crc32.c ../Ventoy2Disk/Core/ventoy_disk.c ../Ventoy2Disk/Core/ventoy_json.c ../Ventoy2Disk/Core/ventoy_log.c ../Ventoy2Disk/Core/ventoy_md5.c ../Ventoy2Disk/Core/ventoy_util.c ../Ventoy2Disk/Lib/exfat/src/libexfat/cluster.c ../Ventoy2Disk/Lib/exfat/src/libexfat/io.c ../Ventoy2Disk/Lib/exfat/src/libexfat/lookup.c ../Ventoy2Disk/Lib/exfat/src/libexfat/mount.c ../Ventoy2Disk/Lib/exfat/src/libexfat/node.c ../Ventoy2Disk/Lib/exfat/src/libexfat/repair.c ../Ventoy2Disk/Lib/exfat/src/libexfat/time.c ../Ventoy2Disk/Lib/exfat/src/libexfat/utf.c ../Ventoy2Disk/Lib/exfat/src/libexfat/utils.c ../Ventoy2Disk/Lib/exfat/src/mkfs/cbm.c ../Ventoy2Disk/Lib/exfat/src/mkfs/fat.c ../Ventoy2Disk/Lib/exfat/src/mkfs/mkexfat.c ../Ventoy2Disk/Lib/exfat/src/mkfs/mkexfat_main.c ../Ventoy2Disk/Lib/exfat/src/mkfs/rootdir.c ../Ventoy2Disk/Lib/exfat/src/mkfs/uct.c ../Ventoy2Disk/Lib/exfat/src/mkfs/uctc.c ../Ventoy2Disk/Lib/exfat/src/mkfs/vbr.c ../Ventoy2Disk/Lib/fat_io_lib/fat_access.c ../Ventoy2Disk/Lib/fat_io_lib/fat_cache.c ../Ventoy2Disk/Lib/fat_io_lib/fat_filelib.c ../Ventoy2Disk/Lib/fat_io_lib/fat_format.c ../Ventoy2Disk/Lib/fat_io_lib/fat_misc.c ../Ventoy2Disk/Lib/fat_io_lib/fat_string.c ../Ventoy2Disk/Lib/fat_io_lib/fat_table.c ../Ventoy2Disk/Lib/fat_io_lib/fat_write.c ../../../.cache/upstream/xz-embedded/linux/lib/decompress_unxz.c ../Ventoy2Disk/QT/refresh_icon_data.c ../Ventoy2Disk/QT/secure_icon_data.c ../Ventoy2Disk/QT/ventoy_qt_stub.c ../Ventoy2Disk/Web/ventoy_http.c ../Ventoy2Disk/main.cpp ../Ventoy2Disk/partcfgdialog.cpp ../Ventoy2Disk/ventoy2diskwindow.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents ../Ventoy2Disk/partcfgdialog.ui ../Ventoy2Disk/ventoy2diskwindow.ui $(DISTDIR)/
 
 
@@ -1304,16 +1304,16 @@ fat_write.o: ../Ventoy2Disk/Lib/fat_io_lib/fat_write.c ../../Ventoy2Disk/Lib/fat
 		../Ventoy2Disk/Lib/fat_io_lib/fat_string.h
 	$(CC) -c $(CFLAGS) $(INCPATH) -o fat_write.o ../Ventoy2Disk/Lib/fat_io_lib/fat_write.c
 
-decompress_unxz.o: ../Ventoy2Disk/Lib/xz-embedded/linux/lib/decompress_unxz.c ../../Ventoy2Disk/Lib/xz-embedded/linux/include/linux/xz.h \
-		../Ventoy2Disk/Lib/xz-embedded/linux/lib/xz/xz_private.h \
-		../../Ventoy2Disk/Lib/xz-embedded/userspace/xz_config.h \
-		../Ventoy2Disk/Lib/xz-embedded/linux/lib/xz/xz_crc32.c \
-		../Ventoy2Disk/Lib/xz-embedded/linux/lib/xz/xz_dec_stream.c \
-		../Ventoy2Disk/Lib/xz-embedded/linux/lib/xz/xz_stream.h \
-		../Ventoy2Disk/Lib/xz-embedded/linux/lib/xz/xz_dec_lzma2.c \
-		../Ventoy2Disk/Lib/xz-embedded/linux/lib/xz/xz_lzma2.h \
-		../Ventoy2Disk/Lib/xz-embedded/linux/lib/xz/xz_dec_bcj.c
-	$(CC) -c $(CFLAGS) $(INCPATH) -o decompress_unxz.o ../Ventoy2Disk/Lib/xz-embedded/linux/lib/decompress_unxz.c
+decompress_unxz.o: ../../../.cache/upstream/xz-embedded/linux/lib/decompress_unxz.c ../../../../.cache/upstream/xz-embedded/linux/include/linux/xz.h \
+		../../../.cache/upstream/xz-embedded/linux/lib/xz/xz_private.h \
+		../../../../.cache/upstream/xz-embedded/userspace/xz_config.h \
+		../../../.cache/upstream/xz-embedded/linux/lib/xz/xz_crc32.c \
+		../../../.cache/upstream/xz-embedded/linux/lib/xz/xz_dec_stream.c \
+		../../../.cache/upstream/xz-embedded/linux/lib/xz/xz_stream.h \
+		../../../.cache/upstream/xz-embedded/linux/lib/xz/xz_dec_lzma2.c \
+		../../../.cache/upstream/xz-embedded/linux/lib/xz/xz_lzma2.h \
+		../../../.cache/upstream/xz-embedded/linux/lib/xz/xz_dec_bcj.c
+	$(CC) -c $(CFLAGS) $(INCPATH) -o decompress_unxz.o ../../../.cache/upstream/xz-embedded/linux/lib/decompress_unxz.c
 
 refresh_icon_data.o: ../Ventoy2Disk/QT/refresh_icon_data.c 
 	$(CC) -c $(CFLAGS) $(INCPATH) -o refresh_icon_data.o ../Ventoy2Disk/QT/refresh_icon_data.c

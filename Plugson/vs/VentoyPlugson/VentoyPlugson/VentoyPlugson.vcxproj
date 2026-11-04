@@ -69,19 +69,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\..\src\Core;..\..\..\src\Web;..\..\..\src\Include;..\..\..\src\Lib\xz-embedded\linux\include;..\..\..\src\Lib\xz-embedded\linux\include\linux;..\..\..\src\Lib\xz-embedded\userspace;..\..\..\src\Lib\fat_io_lib;..\..\..\src\Lib\libhttp\include;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\src\Core;..\..\..\src\Web;..\..\..\src\Include;..\..\..\..\.cache\upstream\xz-embedded\linux\include;..\..\..\..\.cache\upstream\xz-embedded\linux\include\linux;..\..\..\..\.cache\upstream\xz-embedded\userspace;..\..\..\src\Lib\fat_io_lib;..\..\..\src\Lib\libhttp\include;$(ProjectDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\..\src\Core;..\..\..\src\Web;..\..\..\src\Include;..\..\..\src\Lib\xz-embedded\linux\include;..\..\..\src\Lib\xz-embedded\linux\include\linux;..\..\..\src\Lib\xz-embedded\userspace;..\..\..\src\Lib\fat_io_lib;..\..\..\src\Lib\libhttp\include;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\src\Core;..\..\..\src\Web;..\..\..\src\Include;..\..\..\..\.cache\upstream\xz-embedded\linux\include;..\..\..\..\.cache\upstream\xz-embedded\linux\include\linux;..\..\..\..\.cache\upstream\xz-embedded\userspace;..\..\..\src\Lib\fat_io_lib;..\..\..\src\Lib\libhttp\include;$(ProjectDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\..\src\Core;..\..\..\src\Web;..\..\..\src\Include;..\..\..\src\Lib\xz-embedded\linux\include;..\..\..\src\Lib\xz-embedded\linux\include\linux;..\..\..\src\Lib\xz-embedded\userspace;..\..\..\src\Lib\fat_io_lib;..\..\..\src\Lib\libhttp\include;$(ProjectDir);$(IncludePath);$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>..\..\..\src\Core;..\..\..\src\Web;..\..\..\src\Include;..\..\..\..\.cache\upstream\xz-embedded\linux\include;..\..\..\..\.cache\upstream\xz-embedded\linux\include\linux;..\..\..\..\.cache\upstream\xz-embedded\userspace;..\..\..\src\Lib\fat_io_lib;..\..\..\src\Lib\libhttp\include;$(ProjectDir);$(IncludePath);$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\..\src\Core;..\..\..\src\Web;..\..\..\src\Include;..\..\..\src\Lib\xz-embedded\linux\include;..\..\..\src\Lib\xz-embedded\linux\include\linux;..\..\..\src\Lib\xz-embedded\userspace;..\..\..\src\Lib\fat_io_lib;..\..\..\src\Lib\libhttp\include;$(ProjectDir);$(IncludePath);$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>..\..\..\src\Core;..\..\..\src\Web;..\..\..\src\Include;..\..\..\..\.cache\upstream\xz-embedded\linux\include;..\..\..\..\.cache\upstream\xz-embedded\linux\include\linux;..\..\..\..\.cache\upstream\xz-embedded\userspace;..\..\..\src\Lib\fat_io_lib;..\..\..\src\Lib\libhttp\include;$(ProjectDir);$(IncludePath);$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <TargetName>VentoyPlugson_X64</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -191,7 +191,7 @@
     <ClCompile Include="..\..\..\src\Lib\fat_io_lib\fat_table.c" />
     <ClCompile Include="..\..\..\src\Lib\fat_io_lib\fat_write.c" />
     <ClCompile Include="..\..\..\src\Lib\libhttp\include\civetweb.c" />
-    <ClCompile Include="..\..\..\src\Lib\xz-embedded\linux\lib\decompress_unxz.c" />
+    <ClCompile Include="..\..\..\..\.cache\upstream\xz-embedded\linux\lib\decompress_unxz.c" />
     <ClCompile Include="..\..\..\src\main_windows.c" />
     <ClCompile Include="..\..\..\src\Web\ventoy_http.c" />
   </ItemGroup>

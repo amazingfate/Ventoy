@@ -124,45 +124,45 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <EmbedManifest>true</EmbedManifest>
-    <IncludePath>$(ProjectDir)\fat_io_lib\;$(ProjectDir)\xz-embedded-20130513\linux\include;$(ProjectDir)\xz-embedded-20130513\linux\include\linux;$(ProjectDir)\xz-embedded-20130513\userspace;$(ProjectDir)\ff14\source;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\fat_io_lib\;$(ProjectDir)..\..\.cache\upstream\xz-embedded\linux\include;$(ProjectDir)..\..\.cache\upstream\xz-embedded\linux\include\linux;$(ProjectDir)..\..\.cache\upstream\xz-embedded\userspace;$(ProjectDir)\ff14\source;$(IncludePath)</IncludePath>
     <TargetName>Ventoy2Disk</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <LinkIncremental>true</LinkIncremental>
     <EmbedManifest>true</EmbedManifest>
-    <IncludePath>$(ProjectDir)\fat_io_lib\;$(ProjectDir)\xz-embedded-20130513\linux\include;$(ProjectDir)\xz-embedded-20130513\linux\include\linux;$(ProjectDir)\xz-embedded-20130513\userspace;$(ProjectDir)\ff14\source;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\fat_io_lib\;$(ProjectDir)..\..\.cache\upstream\xz-embedded\linux\include;$(ProjectDir)..\..\.cache\upstream\xz-embedded\linux\include\linux;$(ProjectDir)..\..\.cache\upstream\xz-embedded\userspace;$(ProjectDir)\ff14\source;$(IncludePath)</IncludePath>
     <TargetName>Ventoy2Disk_ARM</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <LinkIncremental>true</LinkIncremental>
     <EmbedManifest>true</EmbedManifest>
-    <IncludePath>$(ProjectDir)\fat_io_lib\;$(ProjectDir)\xz-embedded-20130513\linux\include;$(ProjectDir)\xz-embedded-20130513\linux\include\linux;$(ProjectDir)\xz-embedded-20130513\userspace;$(ProjectDir)\ff14\source;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\fat_io_lib\;$(ProjectDir)..\..\.cache\upstream\xz-embedded\linux\include;$(ProjectDir)..\..\.cache\upstream\xz-embedded\linux\include\linux;$(ProjectDir)..\..\.cache\upstream\xz-embedded\userspace;$(ProjectDir)\ff14\source;$(IncludePath)</IncludePath>
     <TargetName>Ventoy2Disk_ARM64</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <EmbedManifest>true</EmbedManifest>
-    <IncludePath>$(ProjectDir)\fat_io_lib\;$(ProjectDir)\xz-embedded-20130513\linux\include;$(ProjectDir)\xz-embedded-20130513\linux\include\linux;$(ProjectDir)\xz-embedded-20130513\userspace;$(ProjectDir)\ff14\source;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\fat_io_lib\;$(ProjectDir)..\..\.cache\upstream\xz-embedded\linux\include;$(ProjectDir)..\..\.cache\upstream\xz-embedded\linux\include\linux;$(ProjectDir)..\..\.cache\upstream\xz-embedded\userspace;$(ProjectDir)\ff14\source;$(IncludePath)</IncludePath>
     <TargetName>Ventoy2Disk_X64</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)\fat_io_lib\;$(ProjectDir)\xz-embedded-20130513\linux\include;$(ProjectDir)\xz-embedded-20130513\linux\include\linux;$(ProjectDir)\xz-embedded-20130513\userspace;$(ProjectDir)\ff14\source;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\fat_io_lib\;$(ProjectDir)..\..\.cache\upstream\xz-embedded\linux\include;$(ProjectDir)..\..\.cache\upstream\xz-embedded\linux\include\linux;$(ProjectDir)..\..\.cache\upstream\xz-embedded\userspace;$(ProjectDir)\ff14\source;$(IncludePath)</IncludePath>
     <TargetName>Ventoy2Disk</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)\fat_io_lib\;$(ProjectDir)\xz-embedded-20130513\linux\include;$(ProjectDir)\xz-embedded-20130513\linux\include\linux;$(ProjectDir)\xz-embedded-20130513\userspace;$(ProjectDir)\ff14\source;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\fat_io_lib\;$(ProjectDir)..\..\.cache\upstream\xz-embedded\linux\include;$(ProjectDir)..\..\.cache\upstream\xz-embedded\linux\include\linux;$(ProjectDir)..\..\.cache\upstream\xz-embedded\userspace;$(ProjectDir)\ff14\source;$(IncludePath)</IncludePath>
     <TargetName>Ventoy2Disk_ARM</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)\fat_io_lib\;$(ProjectDir)\xz-embedded-20130513\linux\include;$(ProjectDir)\xz-embedded-20130513\linux\include\linux;$(ProjectDir)\xz-embedded-20130513\userspace;$(ProjectDir)\ff14\source;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\fat_io_lib\;$(ProjectDir)..\..\.cache\upstream\xz-embedded\linux\include;$(ProjectDir)..\..\.cache\upstream\xz-embedded\linux\include\linux;$(ProjectDir)..\..\.cache\upstream\xz-embedded\userspace;$(ProjectDir)\ff14\source;$(IncludePath)</IncludePath>
     <TargetName>Ventoy2Disk_ARM64</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)\fat_io_lib\;$(ProjectDir)\xz-embedded-20130513\linux\include;$(ProjectDir)\xz-embedded-20130513\linux\include\linux;$(ProjectDir)\xz-embedded-20130513\userspace;$(ProjectDir)\ff14\source;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\fat_io_lib\;$(ProjectDir)..\..\.cache\upstream\xz-embedded\linux\include;$(ProjectDir)..\..\.cache\upstream\xz-embedded\linux\include\linux;$(ProjectDir)..\..\.cache\upstream\xz-embedded\userspace;$(ProjectDir)\ff14\source;$(IncludePath)</IncludePath>
     <TargetName>Ventoy2Disk_X64</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -369,7 +369,7 @@
     <ClCompile Include="VentoyJson.c" />
     <ClCompile Include="ventoy_cli.c" />
     <ClCompile Include="WinDialog.c" />
-    <ClCompile Include="xz-embedded-20130513\linux\lib\decompress_unxz.c" />
+    <ClCompile Include="..\..\.cache\upstream\xz-embedded\linux\lib\decompress_unxz.c" />
     <ClCompile Include="YesDialog.c" />
   </ItemGroup>
   <ItemGroup>
