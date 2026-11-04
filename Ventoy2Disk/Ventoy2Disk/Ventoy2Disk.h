@@ -42,8 +42,11 @@ typedef enum VTOY_FS
 #define SIZE_1TB					(1024ULL * 1024ULL * 1024ULL * 1024ULL)
 #define SIZE_1MB                    (1024 * 1024)
 #define SIZE_2MB                    (2048 * 1024)
-#define VENTOY_EFI_PART_SIZE	    (32 * SIZE_1MB)
-#define VENTOY_EFI_PART_128_SECTORS (128 * 1024 * 1024 / 512)
+/* New disks get a 128 MiB ESP. A disk written with the old 32 MiB size is still recognized. */
+#define VENTOY_EFI_PART_SIZE_LEGACY (32 * SIZE_1MB)
+#define VENTOY_EFI_PART_SIZE	    (128 * SIZE_1MB)
+#define VENTOY_EFI_PART_LEGACY_SECTORS (VENTOY_EFI_PART_SIZE_LEGACY / 512)
+#define VENTOY_EFI_PART_128_SECTORS (VENTOY_EFI_PART_SIZE / 512)
 #define VENTOY_PART1_START_SECTOR    2048
 
 #define VENTOY_FILE_BOOT_IMG    "boot\\boot.img"

@@ -181,7 +181,7 @@ BOOL IsVentoyPhyDrive(int PhyDrive, UINT64 SizeBytes, MBR_HEAD *pMBR, UINT64 *Pa
         PartSectorCount = (UINT32)(pGpt->PartTbl[1].LastLBA + 1 - pGpt->PartTbl[1].StartLBA);
 
         if (pGpt->PartTbl[1].StartLBA != pGpt->PartTbl[0].LastLBA + 1 ||
-            (PartSectorCount != VENTOY_EFI_PART_SIZE / 512 &&
+            (PartSectorCount != VENTOY_EFI_PART_LEGACY_SECTORS &&
              PartSectorCount != VENTOY_EFI_PART_128_SECTORS))
         {
             Log("Part2 not match [%llu %llu] [%llu %llu]",
@@ -230,7 +230,7 @@ BOOL IsVentoyPhyDrive(int PhyDrive, UINT64 SizeBytes, MBR_HEAD *pMBR, UINT64 *Pa
 		PartSectorCount = MBR.PartTbl[1].SectorCount;
 
 		if (MBR.PartTbl[1].StartSectorId != PartStartSector ||
-			(PartSectorCount != VENTOY_EFI_PART_SIZE / 512 &&
+			(PartSectorCount != VENTOY_EFI_PART_LEGACY_SECTORS &&
              PartSectorCount != VENTOY_EFI_PART_128_SECTORS))
 		{
 			Log("Part2 not match [0x%x 0x%x] [%u %u] [%u %u]",

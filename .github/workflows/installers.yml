@@ -65,7 +65,8 @@ jobs:
   windows-installer:
     name: Windows installer
     runs-on: windows-2022
-    timeout-minutes: 90
+    needs: linux-and-livecd
+    timeout-minutes: 120
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -111,7 +112,7 @@ jobs:
           }
           Write-Host "xz-embedded ready: $src"
 
-      - name: Build Ventoy2Disk Win32 Release
+      - name: Build Ventoy2Disk Win32 and x64
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -145,28 +146,104 @@ jobs:
           Write-Host "MSBuild=$msbuild"
           Write-Host "PlatformToolset=$best"
           Write-Host "WindowsTargetPlatformVersion=$sdk"
-          & $msbuild Ventoy2Disk\Ventoy2Disk.sln `
-            /t:Build `
-            /p:Configuration=Release `
-            /p:Platform=Win32 `
-            /p:PlatformToolset=$best `
-            /p:LanguageStandard_C=stdc17 `
-            /p:SDLCheck=false `
-            /p:WindowsTargetPlatformVersion=$sdk `
-            /m `
-            /v:minimal
-          if ($LASTEXITCODE -ne 0) { throw "msbuild failed: $LASTEXITCODE" }
-          $exe = Get-ChildItem -Path Ventoy2Disk -Recurse -Filter Ventoy2Disk.exe |
+          foreach ($platform in @('Win32', 'x64')) {
+            & $msbuild Ventoy2Disk\Ventoy2Disk.sln `
+              /t:Build `
+              /p:Configuration=Release `
+              /p:Platform=$platform `
+              /p:PlatformToolset=$best `
+              /p:LanguageStandard_C=stdc17 `
+              /p:SDLCheck=false `
+              /p:WindowsTargetPlatformVersion=$sdk `
+              /m `
+              /v:minimal
+            if ($LASTEXITCODE -ne 0) { throw "msbuild $platform failed: $LASTEXITCODE" }
+          }
+          $exe32 = Get-ChildItem -Path Ventoy2Disk -Recurse -Filter Ventoy2Disk.exe |
+            Where-Object { $_.FullName -match '\\Release\\' -and $_.DirectoryName -notmatch '\\x64\\' } |
+            Select-Object -First 1
+          $exe64 = Get-ChildItem -Path Ventoy2Disk -Recurse -Filter Ventoy2Disk_X64.exe |
             Where-Object { $_.FullName -match '\\Release\\' } |
             Select-Object -First 1
-          if (-not $exe) { throw 'Ventoy2Disk.exe was not produced' }
+          if (-not $exe32) { throw 'Ventoy2Disk.exe was not produced' }
+          if (-not $exe64) { throw 'Ventoy2Disk_X64.exe was not produced' }
           New-Item -ItemType Directory -Force -Path artifacts | Out-Null
-          Copy-Item $exe.FullName artifacts\Ventoy2Disk.exe
-          Get-Item artifacts\Ventoy2Disk.exe | Format-List FullName, Length
+          Copy-Item $exe32.FullName artifacts\Ventoy2Disk.exe
+          Copy-Item $exe64.FullName artifacts\Ventoy2Disk_X64.exe
+          Get-Item artifacts\Ventoy2Disk.exe, artifacts\Ventoy2Disk_X64.exe | Format-List FullName, Length
+
+      - name: Download the Linux installer payload
+        uses: actions/download-artifact@v7
+        with:
+          pattern: ventoy-*-linux.tar.gz
+          path: linux-pkg
+          merge-multiple: true
+
+      - name: Pack the Windows installer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $ProgressPreference = 'SilentlyContinue'
+          $PSNativeCommandUseErrorActionPreference = $false
+          $tar = Get-ChildItem -Path linux-pkg -Filter 'ventoy-*-linux.tar.gz' -File | Select-Object -First 1
+          if (-not $tar) { throw 'Linux installer tarball was not downloaded' }
+          $unpack = Join-Path (Get-Location) 'win-pack'
+          New-Item -ItemType Directory -Force -Path $unpack | Out-Null
+          & tar.exe -xf $tar.FullName -C $unpack
+          if ($LASTEXITCODE -ne 0) { throw "tar extract failed: $LASTEXITCODE" }
+          $dir = Get-ChildItem -Path $unpack -Directory -Filter 'ventoy-*' | Select-Object -First 1
+          if (-not $dir) { throw 'Linux tarball has no ventoy-* directory' }
+          foreach ($rel in @(
+              'boot\boot.img',
+              'boot\core.img.xz',
+              'ventoy\ventoy.disk.img.xz',
+              'ventoy\version',
+              'plugin'
+            )) {
+            if (-not (Test-Path (Join-Path $dir.FullName $rel))) { throw "Linux package is missing $rel" }
+          }
+          foreach ($name in @('tool', 'WebUI')) {
+            $path = Join-Path $dir.FullName $name
+            if (Test-Path $path) { Remove-Item -Recurse -Force $path }
+          }
+          Get-ChildItem -Path $dir.FullName -File | Where-Object {
+            $_.Extension -eq '.sh' -or $_.Name -like 'VentoyGUI*' -or $_.Name -eq 'README'
+          } | Remove-Item -Force
+          Copy-Item LANGUAGES\languages.json (Join-Path $dir.FullName 'ventoy\languages.json')
+          Copy-Item artifacts\Ventoy2Disk.exe (Join-Path $dir.FullName 'Ventoy2Disk.exe')
+          $alt = Join-Path $dir.FullName 'altexe'
+          New-Item -ItemType Directory -Force -Path $alt | Out-Null
+          Copy-Item artifacts\Ventoy2Disk_X64.exe (Join-Path $alt 'Ventoy2Disk_X64.exe')
+          Copy-Item INSTALL\FOR_X64_ARM.txt (Join-Path $dir.FullName 'FOR_X64_ARM.txt')
+          $ver = (Get-Content (Join-Path $dir.FullName 'ventoy\version') -Raw).Trim()
+          if (-not $ver) { throw 'ventoy/version is empty' }
+          $zip = Join-Path (Get-Location) "artifacts\ventoy-$ver-windows.zip"
+          if (Test-Path $zip) { Remove-Item -Force $zip }
+          & tar.exe -a -cf $zip -C $unpack $dir.Name
+          if ($LASTEXITCODE -ne 0) { throw "zip failed: $LASTEXITCODE" }
+          $listing = @(& tar.exe -tf $zip | ForEach-Object { $_.Replace('\', '/') })
+          if ($LASTEXITCODE -ne 0) { throw "tar list failed: $LASTEXITCODE" }
+          foreach ($need in @(
+              "$($dir.Name)/Ventoy2Disk.exe",
+              "$($dir.Name)/altexe/Ventoy2Disk_X64.exe",
+              "$($dir.Name)/boot/boot.img",
+              "$($dir.Name)/boot/core.img.xz",
+              "$($dir.Name)/ventoy/ventoy.disk.img.xz",
+              "$($dir.Name)/ventoy/version",
+              "$($dir.Name)/ventoy/languages.json"
+            )) {
+            if ($listing -notcontains $need) { throw "windows zip is missing $need" }
+          }
+          $plugin = "$($dir.Name)/plugin/"
+          if (-not ($listing | Where-Object { $_.StartsWith($plugin) })) {
+            throw "windows zip is missing $plugin"
+          }
+          Get-Item $zip | Format-List FullName, Length
+          Write-Host "WINDOWS_ZIP=$zip"
 
       - name: Upload Windows installer
         uses: actions/upload-artifact@v7
         with:
-          path: artifacts/Ventoy2Disk.exe
+          path: artifacts/ventoy-*-windows.zip
           archive: false
           if-no-files-found: error
