@@ -40,7 +40,7 @@ build_func() {
         -DNDEBUG -DNO_CGI -DNO_CACHING -DNO_SSL -DSQLITE_DISABLE_LFS -DSSL_ALREADY_INITIALIZED \
         -DUSE_STACK_SIZE=102400 -DNDEBUG -fPIC \
         ./Ventoy2Disk/Lib/libhttp/include/civetweb.c \
-        -o ./civetweb.o
+        -o ./civetweb.o || return 1
     
     $1 -O2 -Wall -Wno-unused-function -DSTATIC=static -DINIT= \
         -I./Ventoy2Disk \
@@ -69,7 +69,7 @@ build_func() {
         $XXLIB \
         -l pthread \
         ./civetweb.o \
-        -o Ventoy2Disk.${gtkver}_$libsuffix $XXFLAG 
+        -o Ventoy2Disk.${gtkver}_$libsuffix $XXFLAG || return 1
 
     rm -f *.o
     
@@ -84,10 +84,16 @@ build_func() {
     rm -f ../INSTALL/tool/$toolDir/Ventoy2Disk.${gtkver}_$libsuffix
     cp -a Ventoy2Disk.${gtkver}_$libsuffix ../INSTALL/tool/$toolDir/Ventoy2Disk.${gtkver}
     
-    $1 -O2 -D_FILE_OFFSET_BITS=64 Ventoy2Disk/ventoy_gui.c Ventoy2Disk/Core/ventoy_json.c -I Ventoy2Disk/Core  -DVTOY_GUI_ARCH="\"$toolDir\"" -o VentoyGUI.$toolDir
+    $1 -O2 -D_FILE_OFFSET_BITS=64 Ventoy2Disk/ventoy_gui.c Ventoy2Disk/Core/ventoy_json.c -I Ventoy2Disk/Core  -DVTOY_GUI_ARCH="\"$toolDir\"" -o VentoyGUI.$toolDir || return 1
     cp -a VentoyGUI.$toolDir ../INSTALL/
 }
 
+# Debian trixie can build the host GTK3 UI. The other targets need GTK2 or
+# the prebuilt EXLIB trees, which this image does not carry.
+if [ "${1:-}" = "x86_64-gtk3" ]; then
+    build_func "gcc" '64' 'x86_64' 'gtk3' || exit 1
+    exit 0
+fi
 
 build_func "gcc" '64' 'x86_64' 'gtk3'
 
