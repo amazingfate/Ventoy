@@ -123,7 +123,7 @@ int grub_file_is_vlnk_suffix(const char *name, int len)
 
     if (len > 9)
     {
-        suffix = *(grub_uint32_t *)(name + len - 4);
+        suffix = grub_get_unaligned32 (name + len - 4);
         if (grub_strncmp(name + len - 9, ".vlnk.", 6) == 0)
         {
             /* .iso .wim .img .vhd .efi .dat */
