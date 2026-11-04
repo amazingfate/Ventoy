@@ -146,6 +146,13 @@ ensure_automake_116
     python3 gentpl.py Makefile.util.def Makefile.utilgcry.def > Makefile.util.am
     python3 gentpl.py grub-core/Makefile.core.def grub-core/Makefile.gcry.def > grub-core/Makefile.core.am
 )
+# Patches and gentpl.py are newer than the release's generated files.
+# Make would otherwise rerun aclocal, which stops because autoconf-archive
+# is not installed. Patch 0002 already carries configure and Makefile.in.
+find "$WORK" -type f \( \
+    -name Makefile.in -o -name aclocal.m4 -o -name configure \
+    -o -name config.h.in -o -name config-util.h.in \
+    \) -exec touch {} +
 
 if [ "$#" -eq 0 ]; then
     set -- x86_64-efi
