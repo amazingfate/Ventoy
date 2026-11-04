@@ -660,7 +660,7 @@
  
 --- a/grub-core/disk/i386/pc/biosdisk.c
 +++ b/grub-core/disk/i386/pc/biosdisk.c
-@@ -329,6 +329,68 @@
+@@ -329,6 +329,70 @@
    return 0;
  }
  
@@ -731,7 +731,7 @@
  static grub_err_t
  grub_biosdisk_open (const char *name, grub_disk_t disk)
  {
-@@ -436,6 +498,20 @@
+@@ -436,6 +500,20 @@
  
    disk->data = data;
  
@@ -2674,7 +2674,7 @@
    read_hook = file->read_hook;
    read_hook_data = file->read_hook_data;
    if (!file->read_hook)
-@@ -201,7 +381,7 @@
+@@ -201,10 +381,11 @@
  grub_err_t
  grub_file_close (grub_file_t file)
  {
@@ -2683,7 +2683,11 @@
      (file->fs->fs_close) (file);
  
 -  if (file->fs->mod)
++  /* mem: files have no filesystem. Dereferencing a NULL fs faults on arm64. */
 +  if (file->fs && file->fs->mod)
+     grub_dl_unref (file->fs->mod);
+ 
+   if (file->device)
 --- a/grub-core/kern/fs.c
 +++ b/grub-core/kern/fs.c
 @@ -27,6 +27,7 @@
@@ -11842,7 +11846,7 @@
 +
 --- /dev/null
 +++ b/grub-core/ventoy/ventoy_cmd.c
-@@ -0,0 +1,7209 @@
+@@ -0,0 +1,7215 @@
 +/******************************************************************************
 + * ventoy_cmd.c
 + *
@@ -19060,7 +19064,7 @@
 +
 --- /dev/null
 +++ b/grub-core/ventoy/ventoy_def.h
-@@ -0,0 +1,1350 @@
+@@ -0,0 +1,1354 @@
 +/******************************************************************************
 + * ventoy_def.h
 + *
