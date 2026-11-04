@@ -50,7 +50,8 @@ check_elf() {
         echo "missing $bin" >&2
         exit 1
     fi
-    if ! file "$bin" | grep -q "$needle"; then
+    # Debian trixie file(1) says "Intel i386". Older file(1) says "Intel 80386".
+    if ! file "$bin" | grep -E -q "$needle"; then
         echo "$bin is not $needle" >&2
         file "$bin" >&2
         exit 1
@@ -58,7 +59,7 @@ check_elf() {
     echo "ok $bin"
 }
 check_elf "$ROOT/INSTALL/tool/x86_64/V2DServer" "x86-64"
-check_elf "$ROOT/INSTALL/tool/i386/V2DServer" "80386"
+check_elf "$ROOT/INSTALL/tool/i386/V2DServer" "i386|80386"
 check_elf "$ROOT/INSTALL/tool/aarch64/V2DServer" "aarch64"
 check_elf "$ROOT/INSTALL/tool/mips64el/V2DServer" "MIPS"
 
