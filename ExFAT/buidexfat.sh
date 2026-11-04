@@ -13,6 +13,9 @@ else
 fi
 
 CUR="$PWD"
+ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
+. "$ROOT/build/versions.env"
+EXFAT_ZIP=$("$ROOT/build/download.sh" "$EXFAT_URL" "exfat-${EXFAT_VERSION}.zip")
 
 if ! [ -e LIBFUSE ]; then
 	./buidlibfuse.sh
@@ -24,7 +27,7 @@ mkdir -p EXFAT/static
 
 
 rm -rf exfat-1.3.0
-unzip exfat-1.3.0.zip
+unzip "$EXFAT_ZIP"
 sed "/printf.*VERSION/a\    if (access(\"/etc/initrd-release\", F_OK) >= 0) argv[0][0] = '@';"  -i exfat-1.3.0/fuse/main.c
 
 cd exfat-1.3.0
@@ -41,7 +44,7 @@ cp mkfs/mkexfatfs ../EXFAT/static/mkexfatfs
 cd ..
 rm -rf exfat-1.3.0
 
-unzip exfat-1.3.0.zip
+unzip "$EXFAT_ZIP"
 sed "/printf.*VERSION/a\    if (access(\"/etc/initrd-release\", F_OK) >= 0) argv[0][0] = '@';"  -i exfat-1.3.0/fuse/main.c
 
 

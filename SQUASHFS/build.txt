@@ -4,12 +4,13 @@ Build 32&64 unsquashfs tool with gzip/xz/lzma/lz4/lzo/zstd format
 yum install zlib zlib-static
 
 ======== liblzma ============
-github liblzma-master
+XZ Utils 5.2.5 from https://tukaani.org/xz/xz-5.2.5.tar.gz
 ./configure --prefix=xxx --disable-xz --disable-xzdec --disable-lzmadec --disable-lzmainfo --enable-small
 make && make install
 
 ======== squashfs ========
-squashfs4.4.tar.gz
+squashfs-tools 4.4, downloaded by build/build-user.sh
+Ventoy changes: build/patches/squashfs/0001-ventoy-squashfs.patch
 do some modify:
 1. delete -lm and implement log10 
 2. static link zlib/liblzma

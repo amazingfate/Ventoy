@@ -1,11 +1,15 @@
 #!/bin/bash
 
+ROOT=$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)
+. "$ROOT/build/versions.env"
+archive=$("$ROOT/build/download.sh" "$ZSTD_LIB_URL" "zstd-${ZSTD_LIB_VERSION}.tar.gz")
+
 LIBDIR=$PWD/../LIB/ZSTD
 ZSTDDIR=zstd-1.4.4
 
 rm -rf $LIBDIR
 rm -rf $ZSTDDIR
-tar -xf ${ZSTDDIR}.tar.gz
+tar -xf "$archive"
 
 
 cd $ZSTDDIR

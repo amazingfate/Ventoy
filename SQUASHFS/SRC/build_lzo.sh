@@ -1,11 +1,15 @@
 #!/bin/bash
 
+ROOT=$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)
+. "$ROOT/build/versions.env"
+archive=$("$ROOT/build/download.sh" "$LZO_URL" "lzo-${LZO_VERSION}.tar.gz")
+
 LIBDIR=$PWD/../LIB/LZO
 LZODIR=lzo-2.08
 
 rm -rf $LIBDIR
 rm -rf $LZODIR
-tar -xf ${LZODIR}.tar.gz
+tar -xf "$archive"
 
 
 cd $LZODIR

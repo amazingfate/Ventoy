@@ -1,13 +1,16 @@
 #!/bin/sh
 
 CUR="$PWD"
+ROOT=$(CDPATH= cd -- "$(dirname "$0")/../../../.." && pwd)
+. "$ROOT/build/versions.env"
+EXFAT_ZIP=$("$ROOT/build/download.sh" "$EXFAT_URL" "exfat-${EXFAT_VERSION}.zip")
 
 rm -rf src
 mkdir -p src/libexfat
 mkdir -p src/mkfs
 
 rm -rf exfat-1.3.0
-unzip exfat-1.3.0.zip
+unzip "$EXFAT_ZIP"
 
 cd exfat-1.3.0
 autoreconf --install
