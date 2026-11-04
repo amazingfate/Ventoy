@@ -57,6 +57,12 @@ configure_one() {
         if [ "$target" = "i386-pc" ]; then
             sed -i 's/^TARGET_IMG_BASE_LDOPT = -Wl,--image-base$/TARGET_IMG_BASE_LDOPT = -Wl,-Ttext/' grub-core/Makefile
         fi
+        # MIPS gcc warns on Ventoy's unaligned casts, and GRUB appends -Werror
+        # after TARGET_CFLAGS, so the waiver has to be added on the make line.
+        if [ "$target" = "mips64el-efi" ]; then
+            find . -name Makefile -exec sed -i \
+                '/^TARGET_CFLAGS = /{/-Wno-error=cast-align/!s/$/ -Wno-error=cast-align -Wno-error=address-of-packed-member/}' {} +
+        fi
         make -j"$(nproc)"
         make install
     )
