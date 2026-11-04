@@ -54,16 +54,31 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $dest = '.cache/upstream/xz-embedded'
+          $ProgressPreference = 'SilentlyContinue'
+          $PSNativeCommandUseErrorActionPreference = $false
+          $dest = Join-Path (Get-Location) '.cache\upstream\xz-embedded'
           if (Test-Path $dest) { Remove-Item -Recurse -Force $dest }
           New-Item -ItemType Directory -Force -Path $dest | Out-Null
           $tgz = Join-Path $env:RUNNER_TEMP 'xz-embedded.tar.gz'
-          Invoke-WebRequest -Uri 'https://github.com/tukaani-project/xz-embedded/archive/refs/tags/v2024-12-30.tar.gz' -OutFile $tgz
-          tar -xf $tgz -C $dest --strip-components=1
-          git apply --whitespace=nowarn --directory=.cache/upstream/xz-embedded -p1 -- build/patches/xz-embedded/0001-export-unxz.patch
-          if (-not (Test-Path "$dest/linux/lib/decompress_unxz.c")) {
-            throw 'decompress_unxz.c is missing'
+          $url = 'https://github.com/tukaani-project/xz-embedded/archive/refs/tags/v2024-12-30.tar.gz'
+          & curl.exe -fL --retry 5 --retry-delay 2 -o $tgz $url
+          if ($LASTEXITCODE -ne 0) { throw "curl failed: $LASTEXITCODE" }
+          & tar.exe -xf $tgz -C $dest --strip-components=1
+          if ($LASTEXITCODE -ne 0) { throw "tar failed: $LASTEXITCODE" }
+          $src = Join-Path $dest 'linux\lib\decompress_unxz.c'
+          if (-not (Test-Path $src)) { throw "missing $src" }
+          # git apply rejects this patch after core.autocrlf rewrites it.
+          # Dropping STATIC is the whole change: Ventoy calls unxz() from other files.
+          $text = [System.IO.File]::ReadAllText($src)
+          $needle = 'STATIC int INIT unxz'
+          if ($text.Contains($needle)) {
+            $text = $text.Replace($needle, 'int INIT unxz')
+            $utf8 = New-Object System.Text.UTF8Encoding $false
+            [System.IO.File]::WriteAllText($src, $text, $utf8)
+          } elseif (-not $text.Contains('int INIT unxz')) {
+            throw 'unxz() entry point was not found'
           }
+          Write-Host "xz-embedded ready: $src"
 
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
