@@ -105,6 +105,12 @@ if [ -x /VTOY/ntfs3g/sbin/ntfsresize ]; then
     cp -a /VTOY/ntfs3g/bin/ntfsfix /union/usr/bin/
 fi
 
+if [ -f /VTOY/fonts/69-ventoy-noto.conf ]; then
+    mkdir -p /union/usr/share/fonts/noto /union/etc/fonts/conf.d
+    cp -a /VTOY/fonts/*.otf /VTOY/fonts/*.ttf /union/usr/share/fonts/noto/
+    cp -a /VTOY/fonts/69-ventoy-noto.conf /union/etc/fonts/conf.d/
+fi
+
 
 cp -a /bin/busybox /union/bin; ln -sf /union/lib /lib
 cp -a /VTOY/wallpaper.png /union/usr/share/wallpapers/ 2>/dev/null

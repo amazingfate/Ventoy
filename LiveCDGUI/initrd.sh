@@ -25,6 +25,7 @@ cp -a ../EXT/*.xzm ./
 cp -a ../VTOY ./
 cp -a ../EXT/busybox-x86_64 ./VTOY/busybox
 bash ../collect-ntfs3g.sh ./VTOY/ntfs3g
+bash ../collect-fonts.sh ./VTOY/fonts
 
 chown -R 0:0 ./VTOY
 chmod -R 777 ./VTOY

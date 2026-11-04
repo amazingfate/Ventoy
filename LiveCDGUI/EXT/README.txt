@@ -12,7 +12,7 @@ e2edc857acff4fd01f7ff557731debf9  EXT/000-kernel.xzm
 ca068f460d8f4d8e270e44eb0de07e36  EXT/vmlinuz
 
 
-Porteus Kiosk 5.5.0 follows the Gentoo portage snapshot tagged 20230318 (glibc 2.36-r5). Its 001-core.xzm already contains ntfs3g 2022.10.3's FUSE driver (libntfs-3g.so.89) and does not contain ntfsresize or ntfsfix. initrd.sh runs collect-ntfs3g.sh, which downloads the upstream tarball used by the Gentoo ebuild for that version (https://download.tuxera.com/opensource/ntfs-3g_ntfsprogs-2022.10.3.tgz) and builds static ntfsresize and ntfsfix. DejaVu fonts are already in 001-core.xzm. The separate 06-fonts.xzm used with Kiosk 5.2 is not part of this ISO, and the old public URL for it now returns 404.
+Porteus Kiosk 5.5.0 follows the Gentoo portage snapshot tagged 20230318 (glibc 2.36-r5). Its 001-core.xzm already contains ntfs3g 2022.10.3's FUSE driver (libntfs-3g.so.89) and does not contain ntfsresize or ntfsfix. initrd.sh runs collect-ntfs3g.sh, which downloads the upstream tarball used by the Gentoo ebuild for that version (https://download.tuxera.com/opensource/ntfs-3g_ntfsprogs-2022.10.3.tgz) and builds static ntfsresize and ntfsfix. DejaVu fonts are already in 001-core.xzm. The separate 06-fonts.xzm used with Kiosk 5.2 is not part of this ISO, and the old public URL for it now returns 404. initrd.sh runs collect-fonts.sh, which downloads Noto Sans SC/TC/JP/KR Regular from notofonts/noto-cjk Sans2.004 and Noto Sans Thai, Devanagari, Bengali, Tamil, and Malayalam Regular. VTOY/init copies them to /usr/share/fonts/noto and appends those families after sans-serif, so Latin stays on DejaVu.
 
 busybox-x86_64 is from https://busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-x86_64
 MD5SUM
