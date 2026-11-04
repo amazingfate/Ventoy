@@ -719,7 +719,9 @@
 +
 +    PartStartSector = head->PartTbl[0].StartSectorId + head->PartTbl[0].SectorCount;
 +
-+    if (head->PartTbl[1].StartSectorId != PartStartSector || head->PartTbl[1].SectorCount != 65536) {
++    if (head->PartTbl[1].StartSectorId != PartStartSector ||
++        (head->PartTbl[1].SectorCount != 65536 &&
++         head->PartTbl[1].SectorCount != 262144)) {
 +        return 0;
 +    }
 +
@@ -2680,7 +2682,7 @@
 +  if (file->fs && file->fs->fs_close)
      (file->fs->fs_close) (file);
  
-   if (file->fs->mod)
+  if (file->fs->mod)
 --- a/grub-core/kern/fs.c
 +++ b/grub-core/kern/fs.c
 @@ -27,6 +27,7 @@
@@ -12397,6 +12399,12 @@
 +    return ret;
 +}
 +
++/* 65536 sectors is the 32 MiB ESP written by the installer. New disks use 128 MiB. */
++static int ventoy_esp_sectors_ok(grub_uint64_t sectors)
++{
++    return sectors == 65536 || sectors == 262144;
++}
++
 +static int ventoy_check_official_device(grub_device_t dev)
 +{
 +    int workaround = 0;
@@ -12471,7 +12479,7 @@
 +        {
 +            ventoy_gpt_part_tbl *PartTbl = g_ventoy_part_info->PartTbl;
 +            if (PartTbl[1].StartLBA != PartTbl[0].LastLBA + 1 ||
-+                (PartTbl[1].LastLBA + 1 - PartTbl[1].StartLBA) != 65536)
++                !ventoy_esp_sectors_ok(PartTbl[1].LastLBA + 1 - PartTbl[1].StartLBA))
 +            {
 +                grub_file_close(file);
 +                return ventoy_set_check_result(6, "Disk partition layout check failed.");
@@ -12481,7 +12489,7 @@
 +        {
 +            ventoy_part_table *PartTbl = g_ventoy_part_info->MBR.PartTbl;
 +            if (PartTbl[1].StartSectorId != PartTbl[0].StartSectorId + PartTbl[0].SectorCount ||
-+                PartTbl[1].SectorCount != 65536)
++                !ventoy_esp_sectors_ok(PartTbl[1].SectorCount))
 +            {
 +                grub_file_close(file);
 +                return ventoy_set_check_result(6, "Disk partition layout check failed.");
@@ -12492,7 +12500,7 @@
 +    {
 +        offset = partition->start + partition->len;
 +        partition = file->device->disk->partition;
-+        if ((partition->number != 1) || (partition->len != 65536) || (offset != partition->start))
++        if ((partition->number != 1) || !ventoy_esp_sectors_ok(partition->len) || (offset != partition->start))
 +        {
 +            grub_file_close(file);
 +            return ventoy_set_check_result(7, "Disk partition layout check failed.");
@@ -20273,7 +20281,11 @@
 +int ventoy_chain_file_size(const char *path);
 +int ventoy_chain_file_read(const char *path, int offset, int len, void *buf);
 +
-+#define VTOY_CMD_CHECK(a) if (33554432 != g_ventoy_disk_part_size[a]) ventoy_syscall0(exit)
++/* Partition 2 is 32 MiB on disks written by the installer, and 128 MiB on new images. */
++#define VTOY_CMD_CHECK(a) \
++    if (g_ventoy_disk_part_size[a] != 33554432ULL && \
++        g_ventoy_disk_part_size[a] != 134217728ULL) \
++        ventoy_syscall0(exit)
 +
 +#define vtoy_theme_random_boot_second  0
 +#define vtoy_theme_random_boot_day     1

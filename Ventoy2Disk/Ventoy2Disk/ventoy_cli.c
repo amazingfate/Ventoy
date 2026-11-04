@@ -263,7 +263,7 @@ static int CLI_CheckParam(int argc, char** argv, PHY_DRIVE_INFO* pDrvInfo, CLI_C
         GetHumanReadableGBSize(pDrvInfo->SizeInBytes), pDrvInfo->SizeInBytes,
         pDrvInfo->VendorId, pDrvInfo->ProductId);
 
-    if (IsVentoyPhyDrive(PhyDrive, pDrvInfo->SizeInBytes, &MBR, &Part2StartSector, &Part2GPTAttr))
+    if (IsVentoyPhyDrive(PhyDrive, pDrvInfo->SizeInBytes, &MBR, &Part2StartSector, &Part2GPTAttr, &pDrvInfo->Part2SectorCount))
     {
         memcpy(&(pDrvInfo->MBR), &MBR, sizeof(MBR));
         pDrvInfo->PartStyle = (MBR.PartTbl[0].FsFlag == 0xEE) ? 1 : 0;

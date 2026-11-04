@@ -170,8 +170,9 @@ is_disk_contains_ventoy() {
         return
     fi 
     
-    if [ "$VENTOY_SECTOR_NUM" != "$SIZE" ]; then
-        vtdebug "part2 size is $SIZE not $VENTOY_SECTOR_NUM"
+    # New images use a 128 MiB ESP. Disks written by the installer stay at 32 MiB.
+    if [ "$SIZE" != "65536" ] && [ "$SIZE" != "262144" ]; then
+        vtdebug "part2 size is $SIZE not 65536 or 262144"
         ventoy_false
         return
     fi

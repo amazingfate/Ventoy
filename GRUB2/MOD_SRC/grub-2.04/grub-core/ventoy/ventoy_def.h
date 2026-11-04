@@ -1219,7 +1219,11 @@ int ventoy_unregister_all_cmd(void);
 int ventoy_chain_file_size(const char *path);
 int ventoy_chain_file_read(const char *path, int offset, int len, void *buf);
 
-#define VTOY_CMD_CHECK(a) if (33554432 != g_ventoy_disk_part_size[a]) ventoy_syscall0(exit)
+/* Partition 2 is 32 MiB on disks written by the installer, and 128 MiB on new images. */
+#define VTOY_CMD_CHECK(a) \
+    if (g_ventoy_disk_part_size[a] != 33554432ULL && \
+        g_ventoy_disk_part_size[a] != 134217728ULL) \
+        ventoy_syscall0(exit)
 
 #define vtoy_theme_random_boot_second  0
 #define vtoy_theme_random_boot_day     1

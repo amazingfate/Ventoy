@@ -46,6 +46,8 @@
 
 #define VTOYEFI_PART_BYTES    (32 * 1024 * 1024)
 #define VTOYEFI_PART_SECTORS  65536
+/* Install still writes the 32 MiB image. A disk whose ESP is 128 MiB is also valid. */
+#define VTOYEFI_PART_SECTORS_OK(n)  ((n) == 65536 || (n) == 262144)
 
 
 #pragma pack(1)

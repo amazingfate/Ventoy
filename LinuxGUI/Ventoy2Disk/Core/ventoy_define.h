@@ -30,6 +30,9 @@
 
 #define VTOYEFI_PART_BYTES    (32 * 1024 * 1024)
 #define VTOYEFI_PART_SECTORS  65536
+#define VTOYEFI_PART_SECTORS_128  262144
+/* Install still writes the 32 MiB image. A disk whose ESP is 128 MiB is also valid. */
+#define VTOYEFI_PART_SECTORS_OK(n)  ((n) == 65536 || (n) == VTOYEFI_PART_SECTORS_128)
 
 #pragma pack(1)
 
@@ -117,6 +120,7 @@ typedef struct disk_ventoy_data
     uint64_t preserved_space;
 
     uint64_t part2_start_sector;
+    uint64_t part2_sector_count;
 
     int  partition_style; // MBR_PART_STYLE/GPT_PART_STYLE
     VTOY_GPT_INFO gptinfo;

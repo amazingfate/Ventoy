@@ -43,6 +43,7 @@ typedef enum VTOY_FS
 #define SIZE_1MB                    (1024 * 1024)
 #define SIZE_2MB                    (2048 * 1024)
 #define VENTOY_EFI_PART_SIZE	    (32 * SIZE_1MB)
+#define VENTOY_EFI_PART_128_SECTORS (128 * 1024 * 1024 / 512)
 #define VENTOY_PART1_START_SECTOR    2048
 
 #define VENTOY_FILE_BOOT_IMG    "boot\\boot.img"
@@ -198,6 +199,7 @@ typedef struct PHY_DRIVE_INFO
     CHAR ResizeVolumeGuid[64];
 	CHAR FsName[64];
 	UINT64 ResizePart2StartSector;
+	UINT64 Part2SectorCount;
 	VTOY_GPT_INFO Gpt;
 
 }PHY_DRIVE_INFO;
@@ -375,7 +377,7 @@ void VentoyStringToUpper(CHAR* str);
 BOOL AlertSuppressInit(void);
 void SetAlertPromptHookEnable(BOOL enable);
 int VentoyCLIMain(int argc, char** argv);
-BOOL IsVentoyPhyDrive(int PhyDrive, UINT64 SizeBytes, MBR_HEAD* pMBR, UINT64* Part2StartSector, UINT64* GptPart2Attr);
+BOOL IsVentoyPhyDrive(int PhyDrive, UINT64 SizeBytes, MBR_HEAD* pMBR, UINT64* Part2StartSector, UINT64* GptPart2Attr, UINT64* Part2SectorCount);
 int GetVentoyFsNameInPhyDrive(PHY_DRIVE_INFO* CurDrive);
 void CLISetReserveSpace(int MB);
 void CLI_UpdatePercent(int Pos);
