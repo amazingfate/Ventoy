@@ -1,0 +1,103 @@
+# Linux installer, Windows installer, and LiveCD ISO.
+# The Linux job uses a privileged Debian trixie container. The Windows job
+# builds Ventoy2Disk with the VS 2022 toolset on windows-2022.
+name: Installers
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+      - refactor/modern-grub-edk2
+  pull_request:
+
+jobs:
+  linux-and-livecd:
+    name: Linux installer and LiveCD
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build the Debian trixie image
+        run: docker build -f build/Dockerfile.trixie -t ventoy-trixie build
+
+      - name: Compile the Linux installer and LiveCD ISO
+        run: |
+          docker run --rm --privileged \
+            -e HOST_UID="$(id -u)" \
+            -e HOST_GID="$(id -g)" \
+            -v "${{ github.workspace }}:/ventoy" \
+            -w /ventoy \
+            ventoy-trixie \
+            sh build/ci-release.sh
+
+      - name: Upload Linux installer and LiveCD
+        uses: actions/upload-artifact@v4
+        with:
+          name: ventoy-linux-livecd
+          if-no-files-found: error
+          path: |
+            INSTALL/ventoy-*-linux.tar.gz
+            LiveCDGUI/ventoy-*-livecd.iso
+
+  windows-installer:
+    name: Windows installer
+    runs-on: windows-2022
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download xz-embedded
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $dest = '.cache/upstream/xz-embedded'
+          if (Test-Path $dest) { Remove-Item -Recurse -Force $dest }
+          New-Item -ItemType Directory -Force -Path $dest | Out-Null
+          $tgz = Join-Path $env:RUNNER_TEMP 'xz-embedded.tar.gz'
+          Invoke-WebRequest -Uri 'https://github.com/tukaani-project/xz-embedded/archive/refs/tags/v2024-12-30.tar.gz' -OutFile $tgz
+          tar -xf $tgz -C $dest --strip-components=1
+          git apply --whitespace=nowarn --directory=.cache/upstream/xz-embedded -p1 -- build/patches/xz-embedded/0001-export-unxz.patch
+          if (-not (Test-Path "$dest/linux/lib/decompress_unxz.c")) {
+            throw 'decompress_unxz.c is missing'
+          }
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build Ventoy2Disk Win32 Release
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $sdkRoot = "${env:ProgramFiles(x86)}\Windows Kits\10\Include"
+          $sdk = Get-ChildItem -Path $sdkRoot -Directory |
+            Where-Object { $_.Name -match '^10\.0\.\d+' } |
+            Sort-Object Name -Descending |
+            Select-Object -First 1 -ExpandProperty Name
+          if (-not $sdk) { throw 'Windows 10 SDK was not found' }
+          Write-Host "WindowsTargetPlatformVersion=$sdk"
+          msbuild Ventoy2Disk\Ventoy2Disk.sln `
+            /t:Build `
+            /p:Configuration=Release `
+            /p:Platform=Win32 `
+            /p:PlatformToolset=v143 `
+            /p:WindowsTargetPlatformVersion=$sdk `
+            /m `
+            /v:minimal
+          $exe = Get-ChildItem -Path Ventoy2Disk -Recurse -Filter Ventoy2Disk.exe |
+            Where-Object { $_.FullName -match '\\Release\\' } |
+            Select-Object -First 1
+          if (-not $exe) { throw 'Ventoy2Disk.exe was not produced' }
+          New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+          Copy-Item $exe.FullName artifacts\Ventoy2Disk.exe
+          Get-Item artifacts\Ventoy2Disk.exe | Format-List FullName, Length
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ventoy-windows
+          if-no-files-found: error
+          path: artifacts/Ventoy2Disk.exe
