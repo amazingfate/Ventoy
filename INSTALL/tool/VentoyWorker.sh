@@ -563,6 +563,17 @@ else
 
     curver=$(cat ./ventoy/version)
 
+    PART2=$(get_disk_part_name $DISK 2)
+    SHORT_PART2=${PART2#/dev/}
+    part2_size=$(cat /sys/class/block/$SHORT_PART2/size 2>/dev/null)
+    if [ -z "$part2_size" ] || [ "$part2_size" -lt 262144 ]; then
+        echo ""
+        vtwarn "The ESP is smaller than 128MB and cannot be updated in place."
+        vtwarn "Please back up the data on the first partition, then reinstall with -I to format the disk."
+        echo ""
+        exit 1
+    fi
+
     vtinfo "Upgrade operation is safe, all the data in the 1st partition (iso files and other) will be unchanged!"
     echo ""
 

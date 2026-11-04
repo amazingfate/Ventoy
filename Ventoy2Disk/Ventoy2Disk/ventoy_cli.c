@@ -384,6 +384,15 @@ static int Ventoy_CLI_Update(PHY_DRIVE_INFO* pDrvInfo, CLI_CFG* pCfg)
     
     Log("Ventoy_CLI_Update start ...");
 
+    if (pDrvInfo->Part2SectorCount < VENTOY_EFI_PART_128_SECTORS)
+    {
+        Log("ESP has %llu sectors, smaller than 128MB. Back up the first partition and reinstall to format the disk.",
+            (ULONGLONG)pDrvInfo->Part2SectorCount);
+        printf("The ESP is smaller than 128MB and cannot be updated in place.\n");
+        printf("Please back up the data on the first partition, then reinstall to format the disk.\n");
+        return 1;
+    }
+
     rc = UpdateVentoy2PhyDrive(pDrvInfo, TryId++);
     if (rc)
     {
