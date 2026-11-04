@@ -52,6 +52,11 @@ configure_one() {
             HOST_CC=gcc \
             BUILD_CC=gcc \
             $extra
+        # Current bfd accepts --image-base but places .text 0x74 bytes past
+        # the requested 0x9000, so grub-mkimage rejects kernel.img.
+        if [ "$target" = "i386-pc" ]; then
+            sed -i 's/^TARGET_IMG_BASE_LDOPT = -Wl,--image-base$/TARGET_IMG_BASE_LDOPT = -Wl,-Ttext/' grub-core/Makefile
+        fi
         make -j"$(nproc)"
         make install
     )
