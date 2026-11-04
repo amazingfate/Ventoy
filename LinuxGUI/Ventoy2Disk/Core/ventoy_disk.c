@@ -454,7 +454,7 @@ int ventoy_get_vtoy_data(ventoy_disk *info, int *ppartstyle)
 
     vdebug("ventoy_get_vtoy_data %s\n", info->disk_path);
 
-    if (info->size_in_byte < (2 * VTOYEFI_PART_BYTES))
+    if (info->size_in_byte < (2 * VTOYEFI_PART_BYTES_MIN))
     {
         vdebug("disk %s is too small %llu\n", info->disk_path, (_ull)info->size_in_byte);
         return 1;

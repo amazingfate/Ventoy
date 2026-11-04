@@ -15,7 +15,7 @@ IMG="$OUT/ventoy.img"
 GAP=2048
 # 3 GiB exFAT for the ISO files. Three Debian netinst images are about 2.2 GiB.
 DATA_SECTORS=$((3 * 1024 * 2048))
-# 128 MiB ESP. GRUB also still accepts the 32 MiB size written by the installer.
+# 128 MiB ESP, the same size the installer writes. GRUB still accepts a 32 MiB ESP.
 ESP_SECTORS=262144
 P1=$GAP
 P2=$((GAP + DATA_SECTORS))

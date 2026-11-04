@@ -93,7 +93,7 @@ fi
 
 stage=$ROOT/build/out/ci-pack/stage
 rm -rf "$ROOT/build/out/ci-pack"
-# The installed ESP is 32 MiB. Copy modules and lists only; the prefix also
+# The installed ESP is 128 MiB. Copy modules and lists only; the prefix also
 # contains unstripped .module objects that do not fit.
 pc=$ROOT/build/out/prefix-i386-pc/lib/grub/i386-pc
 efi=$ROOT/build/out/prefix-x86_64-efi/lib/grub/x86_64-efi
@@ -136,6 +136,11 @@ if [ "$fmt_status" -ne 0 ]; then
 fi
 if [ -z "${part2_start_sector:-}" ]; then
     echo "part2_start_sector was not set" >&2
+    exit 1
+fi
+part2_sectors=$(cat "/sys/class/block/${LOOP#/dev/}p2/size")
+if [ "$part2_sectors" != "262144" ]; then
+    echo "ESP is $part2_sectors sectors, expected 262144 (128 MiB)" >&2
     exit 1
 fi
 
@@ -249,10 +254,45 @@ dd if="$LOOP" of="$pkg/boot/boot.img" bs=1 count=512 status=none
 dd if="$LOOP" of="$pkg/boot/core.img" bs=512 count=2047 skip=1 status=none
 xz --check=crc32 "$pkg/boot/core.img"
 dd if="$LOOP" of="$pkg/ventoy/ventoy.disk.img" bs=512 count="$VENTOY_SECTOR_NUM" skip="$part2_start_sector" status=none
+img_bytes=$(stat -c '%s' "$pkg/ventoy/ventoy.disk.img")
+if [ "$img_bytes" != "134217728" ]; then
+    echo "ventoy.disk.img is $img_bytes bytes, expected 134217728 (128 MiB)" >&2
+    exit 1
+fi
 xz --check=crc32 "$pkg/ventoy/ventoy.disk.img"
 
 losetup -d "$LOOP"
 LOOP=
+
+echo "=== vtoycli ==="
+# Non-destructive install asks vtoycli for the ESP length. The binaries
+# shipped in git still have the old 32 MiB constant, so rebuild them here.
+(
+    cd "$ROOT/vtoycli"
+    build_vtoycli() {
+        cc=$1
+        lib=$2
+        dest=$3
+        shift 3
+        # shellcheck disable=SC2086
+        $cc "$@" -Os -no-pie -static -D_FILE_OFFSET_BITS=64 \
+            vtoycli.c vtoyfat.c vtoygpt.c crc32.c partresize.c \
+            -Ifat_io_lib/include "fat_io_lib/lib/$lib" \
+            -o "$dest"
+        stripbin=${cc%gcc}strip
+        if [ "$cc" = "gcc" ]; then
+            stripbin=strip
+        fi
+        if command -v "$stripbin" >/dev/null 2>&1; then
+            "$stripbin" --strip-all "$dest"
+        fi
+        test -x "$dest"
+    }
+    build_vtoycli gcc libfat_io_64.a "$ROOT/INSTALL/tool/x86_64/vtoycli"
+    build_vtoycli i686-linux-gnu-gcc libfat_io_32.a "$ROOT/INSTALL/tool/i386/vtoycli"
+    build_vtoycli aarch64-linux-gnu-gcc libfat_io_aa64.a "$ROOT/INSTALL/tool/aarch64/vtoycli"
+    build_vtoycli mips64el-linux-gnuabi64-gcc libfat_io_m64e.a "$ROOT/INSTALL/tool/mips64el/vtoycli" -mips64r2 -mabi=64
+)
 
 echo "=== linux tarball ==="
 cp -a "$ROOT/INSTALL/tool" "$pkg/"

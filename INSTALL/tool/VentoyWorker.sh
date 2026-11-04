@@ -422,7 +422,7 @@ elif [ "$MODE" = "install" -a -n "$NONDESTRUCTIVE" ]; then
     PART1_SECTORS=$(cat /sys/class/block/${PART1#/dev/}/size)
     PART1_4K=$(expr $PART1_SECTORS / 8)
     PART1_MB=$(expr $PART1_4K / 256)
-    PART1_NEW_MB=$(expr $PART1_MB - 32)
+    PART1_NEW_MB=$(expr $PART1_MB - $VENTOY_PART_SIZE_MB)
 
     echo "$PART1 is ${PART1_MB}MiB"
 

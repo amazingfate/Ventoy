@@ -24,7 +24,7 @@
 #define VENTOY_EFI_PART_ATTR   0x8000000000000000ULL
 
 #define SIZE_1MB   (1024 * 1024)
-#define VENTOY_EFI_PART_SIZE   (32 * SIZE_1MB)
+#define VENTOY_EFI_PART_SIZE   (128 * SIZE_1MB)
 
 #define check_free(p) if (p) free(p)
 #define check_close(fd) if (fd >= 0) close(fd)

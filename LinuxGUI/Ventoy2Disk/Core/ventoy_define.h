@@ -28,11 +28,12 @@
 #define VTOYIMG_PART_START_BYTES    (1024 * 1024)
 #define VTOYIMG_PART_START_SECTOR   2048
 
-#define VTOYEFI_PART_BYTES    (32 * 1024 * 1024)
-#define VTOYEFI_PART_SECTORS  65536
-#define VTOYEFI_PART_SECTORS_128  262144
-/* Install still writes the 32 MiB image. A disk whose ESP is 128 MiB is also valid. */
-#define VTOYEFI_PART_SECTORS_OK(n)  ((n) == 65536 || (n) == VTOYEFI_PART_SECTORS_128)
+/* New installs write a 128 MiB ESP. A disk left at 32 MiB is still recognized. */
+#define VTOYEFI_PART_BYTES_MIN (32 * 1024 * 1024)
+#define VTOYEFI_PART_BYTES    (128 * 1024 * 1024)
+#define VTOYEFI_PART_SECTORS  (VTOYEFI_PART_BYTES / 512)
+#define VTOYEFI_PART_SECTORS_128  VTOYEFI_PART_SECTORS
+#define VTOYEFI_PART_SECTORS_OK(n)  ((n) == (VTOYEFI_PART_BYTES_MIN / 512) || (n) == VTOYEFI_PART_SECTORS)
 
 #pragma pack(1)
 

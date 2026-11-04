@@ -1,10 +1,10 @@
 #!/bin/sh
 
-#Ventoy partition 32MB
-VENTOY_PART_SIZE=33554432
-VENTOY_PART_SIZE_MB=32
+#Ventoy ESP is 128MB. Disks written earlier with a 32MB ESP are still recognized.
+VENTOY_PART_SIZE=134217728
+VENTOY_PART_SIZE_MB=128
 VENTOY_SECTOR_SIZE=512
-VENTOY_SECTOR_NUM=65536
+VENTOY_SECTOR_NUM=262144
 
 ventoy_false() {
     [ "1" = "2" ]
@@ -170,7 +170,7 @@ is_disk_contains_ventoy() {
         return
     fi 
     
-    # New images use a 128 MiB ESP. Disks written by the installer stay at 32 MiB.
+    # New installs write 128 MiB. A disk left from the 32 MiB installer is still Ventoy.
     if [ "$SIZE" != "65536" ] && [ "$SIZE" != "262144" ]; then
         vtdebug "part2 size is $SIZE not 65536 or 262144"
         ventoy_false
@@ -307,7 +307,7 @@ format_ventoy_disk_mbr() {
             mklabel msdos \
             unit s \
             mkpart primary ntfs $part1_start_sector $part1_end_sector \
-            mkpart primary fat16 $part2_start_sector $part2_end_sector \
+            mkpart primary fat32 $part2_start_sector $part2_end_sector \
             set 1 boot on \
             quit
 
@@ -380,7 +380,7 @@ EOF
     for i in 0 1 2 3 4 5 6 7 8 9; do
         check_umount_disk "$PART2"
 
-        if mkfs.vfat -F 16 -n VTOYEFI -s 1 $PART2; then
+        if mkfs.vfat -F 32 -n VTOYEFI $PART2; then
             echo 'success'
             break
         else
@@ -449,7 +449,7 @@ format_ventoy_disk_gpt() {
         mklabel gpt \
         unit s \
         mkpart Ventoy ntfs $part1_start_sector $part1_end_sector \
-        mkpart VTOYEFI fat16 $part2_start_sector $part2_end_sector \
+        mkpart VTOYEFI fat32 $part2_start_sector $part2_end_sector \
         $vt_set_efi_type \
         quit
 
@@ -498,7 +498,7 @@ format_ventoy_disk_gpt() {
     for i in 0 1 2 3 4 5 6 7 8 9; do
         check_umount_disk "$PART2"
         
-        if mkfs.vfat -F 16 -n VTOYEFI -s 1 $PART2; then
+        if mkfs.vfat -F 32 -n VTOYEFI $PART2; then
             echo 'success'
             break
         else

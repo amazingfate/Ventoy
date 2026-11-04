@@ -584,7 +584,7 @@ static int ventoy_check_efi_part_data(int fd, uint64_t offset)
     }
     
     lseek(fd, offset, SEEK_SET);
-    for (i = 0; i < 32; i++)
+    for (i = 0; i < VTOYEFI_PART_BYTES / SIZE_1MB; i++)
     {
         len = read(fd, buf, SIZE_1MB);
         if (len != SIZE_1MB || memcmp(buf, g_efi_part_raw_img + i * SIZE_1MB, SIZE_1MB))
@@ -593,7 +593,7 @@ static int ventoy_check_efi_part_data(int fd, uint64_t offset)
             return 1;
         }
 
-        g_current_progress = PT_CHECK_PART2 + (i / 4);
+        g_current_progress = PT_CHECK_PART2 + (i * 8) / (VTOYEFI_PART_BYTES / SIZE_1MB);
     }
 
     return 0;
@@ -610,7 +610,7 @@ static int ventoy_write_efipart(int fd, uint64_t offset, uint32_t secureboot)
     VentoyProcSecureBoot((int)secureboot);
 
     g_current_progress = PT_WRITE_VENTOY_START;
-    for (i = 0; i < 32; i++)
+    for (i = 0; i < VTOYEFI_PART_BYTES / SIZE_1MB; i++)
     {
         len = write(fd, g_efi_part_raw_img + i * SIZE_1MB, SIZE_1MB);
         vlog("write disk writelen:%lld datalen:%d [ %s ]\n", 
@@ -622,7 +622,7 @@ static int ventoy_write_efipart(int fd, uint64_t offset, uint32_t secureboot)
             return 1;
         }
     
-        g_current_progress = PT_WRITE_VENTOY_START + i / 4;
+        g_current_progress = PT_WRITE_VENTOY_START + (i * 8) / (VTOYEFI_PART_BYTES / SIZE_1MB);
     }
 
     return 0;
