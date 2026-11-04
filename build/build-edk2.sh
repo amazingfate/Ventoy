@@ -68,6 +68,70 @@ else
     set -- $requested
 fi
 
+# VtoyShim is installed under the name shim looks up: fbx64.efi, fbia32.efi, fbaa64.efi.
+# The 32-byte 0x26 placeholder stays so ventoy_pack.sh can write the GRUB hash into it.
+install_vtoy_shim() {
+    arch=$1
+    case "$arch" in
+        X64) name=fbx64.efi ;;
+        IA32) name=fbia32.efi ;;
+        AARCH64) name=fbaa64.efi ;;
+        *) return 0 ;;
+    esac
+    src="$OUT/$arch/VtoyShim.efi"
+    if [ ! -f "$src" ]; then
+        return 0
+    fi
+    case "$arch" in
+        AARCH64) oc=aarch64-linux-gnu-objcopy; od=aarch64-linux-gnu-objdump ;;
+        *) oc=objcopy; od=objdump ;;
+    esac
+    sbat="$APP_SRC/VtoyShim/sbat.csv"
+    dst="$ROOT/INSTALL/EFI/BOOT/$name"
+    mkdir -p "$ROOT/INSTALL/EFI/BOOT"
+    "$oc" \
+        --add-section ".sbat=$sbat" \
+        --set-section-flags .sbat=alloc,load,readonly,data \
+        "$src" "$dst"
+
+    tmpfile=$(mktemp)
+    "$od" -h "$dst" | grep -E '^[[:space:]]*[0-9]+ \.' > "$tmpfile"
+    sbat_size=$(stat -c '%s' "$sbat")
+    lmax=0
+    lsize=0
+    while read -r line; do
+        lbase=$(echo "$line" | awk '{print $4}')
+        lbase=$((0x$lbase))
+        if [ "$lbase" -gt "$lmax" ]; then
+            lmax=$lbase
+            lsize=$(echo "$line" | awk '{print $3}')
+            lsize=$((0x$lsize))
+        fi
+    done < "$tmpfile"
+    rm -f "$tmpfile"
+    lvma=$((lsize + lmax))
+    lvma_align=$(( (lvma + 4095) / 4096 * 4096 ))
+    "$oc" --adjust-section-vma ".sbat=$(printf '0x%08x' "$lvma_align")" "$dst"
+
+    img_base=$("$od" -p "$dst" | awk '/ImageBase/ {print $2}')
+    size_img=$("$od" -p "$dst" | awk '/SizeOfImage/ {print $2}')
+    sbat_end=$((lvma_align + sbat_size))
+    if [ "$img_base" != "0000000000000000" ]; then
+        echo "ImageBase of $name is $img_base" >&2
+        exit 1
+    fi
+    if [ "$((0x$size_img))" -lt "$sbat_end" ]; then
+        echo "SizeOfImage 0x$size_img does not cover the SBAT section" >&2
+        exit 1
+    fi
+    magic=$(hexdump -C "$dst" | grep -c '26 26 26 26 26 26 26 26' || true)
+    if [ "$magic" -ne 1 ]; then
+        echo "$name hash placeholder count is $magic, expected 1" >&2
+        exit 1
+    fi
+    echo "installed $dst"
+}
+
 mkdir -p "$OUT"
 for arch in "$@"; do
     case "$arch" in
@@ -90,6 +154,7 @@ for arch in "$@"; do
     mkdir -p "$OUT/$arch"
     find "$SRC/Build/MdeModule/RELEASE_GCC/$arch" -name '*.efi' -path '*/OUTPUT/*.efi' \
         -exec cp -a {} "$OUT/$arch/" \;
+    install_vtoy_shim "$arch"
 done
 
 find "$OUT" -name '*.efi' -printf '%p %s\n' | sort
