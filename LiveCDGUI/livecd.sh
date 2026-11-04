@@ -53,10 +53,17 @@ mkdir -p efimnt
 
 dd if=/dev/zero of=efi.img bs=1M count=2
 mkfs.vfat efi.img
-mount efi.img efimnt
+# Same fsconfig failure as download_ext.sh: mount the loop device, not the file.
+efi_loop=$(losetup -f --show "$(readlink -f efi.img)")
+if [ ! -b "$efi_loop" ]; then
+    spec=$(cat "/sys/class/block/${efi_loop#/dev/}/dev")
+    mknod -m 660 "$efi_loop" b "${spec%%:*}" "${spec##*:}"
+fi
+mount "$efi_loop" efimnt || exit 1
 mkdir -p efimnt/EFI/boot
 cp $OPT GRUB/bootx64.efi efimnt/EFI/boot/
 umount efimnt
+losetup -d "$efi_loop"
 
 sync
 cp -a efi.img ISO_TMP/EFI/boot/
