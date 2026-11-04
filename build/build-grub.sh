@@ -66,14 +66,26 @@ configure_one() {
         x86_64-efi)
             mods="part_gpt part_msdos fat exfat ntfs ext2 xfs iso9660 udf squash4 loopback linux normal configfile test echo search gzio xzio ventoy"
             "$prefix_bin/bin/grub-mkimage" -O x86_64-efi -p '(,2)/grub' -o "$OUT/images/BOOTX64.EFI" $mods
+            # Shim loads this name. fbx64.efi checks its hash at pack time.
+            mkdir -p "$ROOT/INSTALL/EFI/BOOT"
+            "$prefix_bin/bin/grub-mkimage" -O x86_64-efi -p '(,2)/grub' -o "$ROOT/INSTALL/EFI/BOOT/grubx64_real.efi" $mods
+            live_mods="search iso9660 fat part_msdos part_gpt configfile normal linux echo test gzio"
+            "$prefix_bin/bin/grub-mkimage" -O x86_64-efi -p '/EFI/boot' \
+                -c "$ROOT/LiveCDGUI/GRUB/embed.cfg" \
+                -o "$ROOT/LiveCDGUI/GRUB/bootx64.efi" $live_mods
+            cp -a "$ROOT/LiveCDGUI/GRUB/bootx64.efi" "$ROOT/LiveCD/GRUB/bootx64.efi"
             ;;
         i386-efi)
             mods="part_gpt part_msdos fat exfat ntfs ext2 iso9660 linux normal configfile test echo search gzio ventoy"
             "$prefix_bin/bin/grub-mkimage" -O i386-efi -p '(,2)/grub' -o "$OUT/images/BOOTIA32.EFI" $mods
+            mkdir -p "$ROOT/INSTALL/EFI/BOOT"
+            "$prefix_bin/bin/grub-mkimage" -O i386-efi -p '(,2)/grub' -o "$ROOT/INSTALL/EFI/BOOT/grubia32_real.efi" $mods
             ;;
         arm64-efi)
             mods="part_gpt part_msdos fat exfat ntfs ext2 xfs iso9660 udf squash4 loopback linux normal configfile test echo search gzio xzio ventoy"
             "$prefix_bin/bin/grub-mkimage" -O arm64-efi -p '(,2)/grub' -o "$OUT/images/BOOTAA64.EFI" $mods
+            mkdir -p "$ROOT/INSTALL/EFI/BOOT"
+            "$prefix_bin/bin/grub-mkimage" -O arm64-efi -p '(,2)/grub' -o "$ROOT/INSTALL/EFI/BOOT/grubaa64_real.efi" $mods
             ;;
         loongarch64-efi)
             mods="part_gpt part_msdos fat exfat ntfs ext2 xfs iso9660 udf squash4 loopback linux normal configfile test echo search gzio xzio ventoy"
@@ -86,6 +98,13 @@ configure_one() {
         i386-pc)
             mods="biosdisk part_msdos part_gpt fat ext2 iso9660 linux linux16 normal configfile test echo search gzio ventoy"
             "$prefix_bin/bin/grub-mkimage" -O i386-pc -p '(,2)/grub' -o "$OUT/images/core.img" $mods
+            live_mods="biosdisk iso9660 fat part_msdos configfile normal linux linux16 echo test search"
+            "$prefix_bin/bin/grub-mkimage" -O i386-pc-eltorito -p '/EFI/boot' \
+                -c "$ROOT/LiveCDGUI/GRUB/embed.cfg" \
+                -o "$ROOT/LiveCDGUI/GRUB/cdrom.img" $live_mods
+            cp -a "$prefix_bin/lib/grub/i386-pc/boot_hybrid.img" "$ROOT/LiveCDGUI/GRUB/boot_hybrid.img"
+            cp -a "$ROOT/LiveCDGUI/GRUB/cdrom.img" "$ROOT/LiveCD/GRUB/cdrom.img"
+            cp -a "$ROOT/LiveCDGUI/GRUB/boot_hybrid.img" "$ROOT/LiveCD/GRUB/boot_hybrid.img"
             ;;
     esac
 }
