@@ -72,17 +72,87 @@ echo "=== VentoyVlnk.sh ==="
 sh "$ROOT/Vlnk/pack.sh"
 test -f "$ROOT/INSTALL/VentoyVlnk.sh"
 
-echo "=== GRUB x86_64-efi and i386-pc ==="
-sh "$ROOT/build/build-grub.sh" x86_64-efi i386-pc
+echo "=== GRUB ==="
+sh "$ROOT/build/build-grub.sh" \
+    x86_64-efi i386-efi arm64-efi loongarch64-efi mips64el-efi i386-pc
 test -f "$ROOT/build/out/images/core.img"
+test -f "$ROOT/build/out/images/BOOTX64.EFI"
+test -f "$ROOT/build/out/images/BOOTIA32.EFI"
+test -f "$ROOT/build/out/images/BOOTAA64.EFI"
+test -f "$ROOT/build/out/images/BOOTLOONGARCH64.EFI"
+test -f "$ROOT/build/out/images/BOOTMIPS.EFI"
 test -f "$ROOT/build/out/prefix-i386-pc/sbin/grub-bios-setup"
 test -f "$ROOT/INSTALL/EFI/BOOT/grubx64_real.efi"
+test -f "$ROOT/INSTALL/EFI/BOOT/grubia32_real.efi"
+test -f "$ROOT/INSTALL/EFI/BOOT/grubaa64_real.efi"
 test -f "$ROOT/LiveCDGUI/GRUB/bootx64.efi"
 test -f "$ROOT/LiveCDGUI/GRUB/cdrom.img"
 
-echo "=== EDK2 X64 shim (fbx64.efi) ==="
-sh "$ROOT/build/build-edk2.sh" X64
+echo "=== EDK2 ==="
+sh "$ROOT/build/build-edk2.sh" X64 IA32 AARCH64 LOONGARCH64
 test -f "$ROOT/INSTALL/EFI/BOOT/fbx64.efi"
+test -f "$ROOT/INSTALL/EFI/BOOT/fbia32.efi"
+test -f "$ROOT/INSTALL/EFI/BOOT/fbaa64.efi"
+test -f "$ROOT/build/out/edk2/X64/Ventoy.efi"
+test -f "$ROOT/build/out/edk2/IA32/Ventoy.efi"
+test -f "$ROOT/build/out/edk2/AARCH64/Ventoy.efi"
+test -f "$ROOT/build/out/edk2/LOONGARCH64/Ventoy.efi"
+
+echo "=== EfiFs drivers ==="
+sh "$ROOT/build/build-efifs.sh" X64 IA32 AARCH64 LOONGARCH64
+for short in x64 ia32 aa64 loongarch64; do
+    test -f "$ROOT/build/out/efifs/iso9660_${short}.efi"
+    test -f "$ROOT/build/out/efifs/udf_${short}.efi"
+done
+
+echo "=== initramfs tools ==="
+sh "$ROOT/build/build-user.sh"
+sh "$ROOT/build/build-init-busybox.sh"
+for arch in x86_64 i386 aarch64 loongarch64 mips64el; do
+    for bin in dmsetup unsquashfs vtoy_fuse_iso vtoytool vblade lunzip lz4cat zstdcat xzminidec; do
+        test -f "$ROOT/build/out/tools/$arch/$bin"
+    done
+    test -f "$ROOT/build/out/initramfs/$arch/busybox.xz"
+    test -f "$ROOT/build/out/initramfs/$arch/vtchmod"
+done
+test -f "$ROOT/build/out/tools/loongarch64/ash"
+(
+    cd "$ROOT/IMG"
+    VTOY_CPIO_DEST="$ROOT/INSTALL/ventoy" bash ./mkcpio.sh
+)
+for cpio in ventoy.cpio ventoy_x86.cpio ventoy_arm64.cpio ventoy_mips64.cpio ventoy_loongarch64.cpio; do
+    test -f "$ROOT/INSTALL/ventoy/$cpio"
+done
+
+echo "=== vtoycli ==="
+# Non-destructive install asks vtoycli for the ESP length. Rebuild before the
+# disk image is packed so the exfat helper copied onto the ESP matches.
+(
+    cd "$ROOT/vtoycli"
+    build_vtoycli() {
+        cc=$1
+        lib=$2
+        dest=$3
+        shift 3
+        # shellcheck disable=SC2086
+        $cc "$@" -Os -no-pie -static -D_FILE_OFFSET_BITS=64 \
+            vtoycli.c vtoyfat.c vtoygpt.c crc32.c partresize.c \
+            -Ifat_io_lib/include "fat_io_lib/lib/$lib" \
+            -o "$dest"
+        stripbin=${cc%gcc}strip
+        if [ "$cc" = "gcc" ]; then
+            stripbin=strip
+        fi
+        if command -v "$stripbin" >/dev/null 2>&1; then
+            "$stripbin" --strip-all "$dest"
+        fi
+        test -x "$dest"
+    }
+    build_vtoycli gcc libfat_io_64.a "$ROOT/INSTALL/tool/x86_64/vtoycli"
+    build_vtoycli i686-linux-gnu-gcc libfat_io_32.a "$ROOT/INSTALL/tool/i386/vtoycli"
+    build_vtoycli aarch64-linux-gnu-gcc libfat_io_aa64.a "$ROOT/INSTALL/tool/aarch64/vtoycli"
+    build_vtoycli mips64el-linux-gnuabi64-gcc libfat_io_m64e.a "$ROOT/INSTALL/tool/mips64el/vtoycli" -mips64r2 -mabi=64
+)
 
 echo "=== installer disk image ==="
 ver=$(sed -n 's/.*VENTOY_VERSION="\([^"]*\)".*/\1/p' "$ROOT/INSTALL/grub/grub.cfg" | head -1)
@@ -94,19 +164,22 @@ fi
 stage=$ROOT/build/out/ci-pack/stage
 rm -rf "$ROOT/build/out/ci-pack"
 # The installed ESP is 128 MiB. Copy modules and lists only; the prefix also
-# contains unstripped .module objects that do not fit.
-pc=$ROOT/build/out/prefix-i386-pc/lib/grub/i386-pc
-efi=$ROOT/build/out/prefix-x86_64-efi/lib/grub/x86_64-efi
-mkdir -p "$stage/bios/i386-pc" "$stage/grub/i386-pc" "$stage/grub/x86_64-efi"
+# contains unstripped .module objects that do not belong on the FAT volume.
+mkdir -p "$stage/bios/i386-pc" "$stage/grub"
 cp -a "$ROOT/INSTALL/grub/." "$stage/grub/"
-cp -a "$pc"/*.mod "$pc"/*.lst "$stage/grub/i386-pc/"
-cp -a "$efi"/*.mod "$efi"/*.lst "$stage/grub/x86_64-efi/"
+for plat in i386-pc x86_64-efi i386-efi arm64-efi loongarch64-efi mips64el-efi; do
+    src=$ROOT/build/out/prefix-$plat/lib/grub/$plat
+    dest=$stage/grub/$plat
+    rm -rf "$dest"
+    mkdir -p "$dest"
+    cp -a "$src"/*.mod "$src"/*.lst "$dest/"
+    test -f "$dest/normal.mod"
+done
+pc=$ROOT/build/out/prefix-i386-pc/lib/grub/i386-pc
 cp -a "$pc"/*.mod "$pc"/*.lst "$pc"/*.img "$stage/bios/i386-pc/"
 cp -a "$ROOT/build/out/images/core.img" "$stage/bios/i386-pc/core.img"
 test -f "$stage/bios/i386-pc/boot.img"
 test -f "$stage/bios/i386-pc/core.img"
-test -f "$stage/grub/i386-pc/normal.mod"
-test -f "$stage/grub/x86_64-efi/normal.mod"
 
 img=$ROOT/build/out/ci-pack/img.bin
 dd if=/dev/zero of="$img" bs=1M count=256 status=none
@@ -182,8 +255,9 @@ mkdir -p "$mnt/grub"
 # vfat has no Unix owners. cp -a then exits 1 even though the bytes were written.
 cp -a --no-preserve=ownership "$stage/grub/." "$mnt/grub/"
 test -f "$mnt/grub/grub.cfg"
-test -f "$mnt/grub/i386-pc/normal.mod"
-test -f "$mnt/grub/x86_64-efi/normal.mod"
+for plat in i386-pc x86_64-efi i386-efi arm64-efi loongarch64-efi mips64el-efi; do
+    test -f "$mnt/grub/$plat/normal.mod"
+done
 
 (
     cd "$mnt/grub"
@@ -212,10 +286,47 @@ rm -f "$mnt/grub/i386-pc/"*.img
 
 cp -a --no-preserve=ownership "$ROOT/INSTALL/ventoy" "$mnt/"
 cp -a --no-preserve=ownership "$ROOT/INSTALL/EFI" "$mnt/"
-test -f "$mnt/EFI/BOOT/BOOTX64.EFI"
+# INSTALL/EFI and INSTALL/ventoy still contain previously built files.
+# Replace every boot file this run compiled.
+install_built() {
+    src=$1
+    dest=$2
+    if [ ! -f "$src" ]; then
+        echo "missing built file $src" >&2
+        exit 1
+    fi
+    cp -a --no-preserve=ownership "$src" "$dest"
+}
+imgdir=$ROOT/build/out/images
+install_built "$imgdir/BOOTX64.EFI" "$mnt/EFI/BOOT/BOOTX64.EFI"
+install_built "$imgdir/BOOTIA32.EFI" "$mnt/EFI/BOOT/BOOTIA32.EFI"
+install_built "$imgdir/BOOTAA64.EFI" "$mnt/EFI/BOOT/BOOTAA64.EFI"
+install_built "$imgdir/BOOTLOONGARCH64.EFI" "$mnt/EFI/BOOT/BOOTLOONGARCH64.EFI"
+install_built "$imgdir/BOOTMIPS.EFI" "$mnt/EFI/BOOT/BOOTMIPS.EFI"
+install_built "$imgdir/BOOTMIPS.EFI" "$mnt/EFI/BOOT/BOOTMIPS64EL.EFI"
+edk=$ROOT/build/out/edk2
+install_built "$edk/X64/Ventoy.efi" "$mnt/ventoy/ventoy_x64.efi"
+install_built "$edk/X64/VtoyUtil.efi" "$mnt/ventoy/vtoyutil_x64.efi"
+install_built "$edk/IA32/Ventoy.efi" "$mnt/ventoy/ventoy_ia32.efi"
+install_built "$edk/IA32/VtoyUtil.efi" "$mnt/ventoy/vtoyutil_ia32.efi"
+install_built "$edk/AARCH64/Ventoy.efi" "$mnt/ventoy/ventoy_aa64.efi"
+install_built "$edk/AARCH64/VtoyUtil.efi" "$mnt/ventoy/vtoyutil_aa64.efi"
+install_built "$edk/LOONGARCH64/Ventoy.efi" "$mnt/ventoy/ventoy_loongarch64.efi"
+install_built "$edk/LOONGARCH64/VtoyUtil.efi" "$mnt/ventoy/vtoyutil_loongarch64.efi"
+efs=$ROOT/build/out/efifs
+for short in x64 ia32 aa64 loongarch64; do
+    install_built "$efs/iso9660_${short}.efi" "$mnt/ventoy/iso9660_${short}.efi"
+    install_built "$efs/udf_${short}.efi" "$mnt/ventoy/udf_${short}.efi"
+done
+for cpio in ventoy.cpio ventoy_x86.cpio ventoy_arm64.cpio ventoy_mips64.cpio ventoy_loongarch64.cpio; do
+    test -f "$mnt/ventoy/$cpio"
+done
 test -f "$mnt/EFI/BOOT/grubx64_real.efi"
+test -f "$mnt/EFI/BOOT/grubia32_real.efi"
+test -f "$mnt/EFI/BOOT/grubaa64_real.efi"
 test -f "$mnt/EFI/BOOT/fbx64.efi"
-test -f "$mnt/ventoy/ventoy_x64.efi"
+test -f "$mnt/EFI/BOOT/fbia32.efi"
+test -f "$mnt/EFI/BOOT/fbaa64.efi"
 
 mkdir -p "$mnt/tool"
 dd status=none bs=1024 count=16 if="$ROOT/INSTALL/tool/i386/vtoycli" of="$mnt/tool/mount.exfat-fuse_i386"
@@ -227,20 +338,27 @@ if [ -f "$ROOT/INSTALL/tool/ENROLL_THIS_KEY_IN_MOKMANAGER.cer" ]; then
 fi
 
 # Secure Boot signing stays off unless VENTOY_CERT_KEY and VENTOY_CERT_PEM
-# are provided. The placeholder in fbx64.efi still has to become the hash of
-# this disk's grubx64_real.efi.
-grub_sha256=$(sha256sum "$mnt/EFI/BOOT/grubx64_real.efi" | awk '{print $1}')
-magic_cnt=$(hexdump -C "$mnt/EFI/BOOT/fbx64.efi" | grep -c '26 26 26 26 26 26 26 26' || true)
-if [ "$magic_cnt" -ne 1 ]; then
-    echo "fbx64.efi hash placeholder count is $magic_cnt, expected 1" >&2
-    exit 1
-fi
-magic_off_hex=$(hexdump -C "$mnt/EFI/BOOT/fbx64.efi" | grep '26 26 26 26 26 26 26 26' | awk '{print $1}')
-magic_off=$(printf '%u' "0x${magic_off_hex}")
-echo "Ventoy Grub hash $grub_sha256"
-hashbin=$ROOT/build/out/ci-pack/grub.sha256
-python3 -c 'import sys; sys.stdout.buffer.write(bytes.fromhex(sys.argv[1]))' "$grub_sha256" > "$hashbin"
-dd if="$hashbin" bs=1 count=32 of="$mnt/EFI/BOOT/fbx64.efi" seek="$magic_off" conv=notrunc status=none
+# are provided. Each shim's placeholder becomes the hash of the GRUB image
+# it loads.
+inject_grub_hash() {
+    shim=$1
+    grub=$2
+    grub_sha256=$(sha256sum "$mnt/EFI/BOOT/$grub" | awk '{print $1}')
+    magic_cnt=$(hexdump -C "$mnt/EFI/BOOT/$shim" | grep -c '26 26 26 26 26 26 26 26' || true)
+    if [ "$magic_cnt" -ne 1 ]; then
+        echo "$shim hash placeholder count is $magic_cnt, expected 1" >&2
+        exit 1
+    fi
+    magic_off_hex=$(hexdump -C "$mnt/EFI/BOOT/$shim" | grep '26 26 26 26 26 26 26 26' | awk '{print $1}')
+    magic_off=$(printf '%u' "0x${magic_off_hex}")
+    echo "$shim <- $grub $grub_sha256"
+    hashbin=$ROOT/build/out/ci-pack/grub.sha256
+    python3 -c 'import sys; sys.stdout.buffer.write(bytes.fromhex(sys.argv[1]))' "$grub_sha256" > "$hashbin"
+    dd if="$hashbin" bs=1 count=32 of="$mnt/EFI/BOOT/$shim" seek="$magic_off" conv=notrunc status=none
+}
+inject_grub_hash fbx64.efi grubx64_real.efi
+inject_grub_hash fbia32.efi grubia32_real.efi
+inject_grub_hash fbaa64.efi grubaa64_real.efi
 
 sync
 umount "$mnt"
@@ -263,36 +381,6 @@ xz --check=crc32 "$pkg/ventoy/ventoy.disk.img"
 
 losetup -d "$LOOP"
 LOOP=
-
-echo "=== vtoycli ==="
-# Non-destructive install asks vtoycli for the ESP length. The binaries
-# shipped in git still have the old 32 MiB constant, so rebuild them here.
-(
-    cd "$ROOT/vtoycli"
-    build_vtoycli() {
-        cc=$1
-        lib=$2
-        dest=$3
-        shift 3
-        # shellcheck disable=SC2086
-        $cc "$@" -Os -no-pie -static -D_FILE_OFFSET_BITS=64 \
-            vtoycli.c vtoyfat.c vtoygpt.c crc32.c partresize.c \
-            -Ifat_io_lib/include "fat_io_lib/lib/$lib" \
-            -o "$dest"
-        stripbin=${cc%gcc}strip
-        if [ "$cc" = "gcc" ]; then
-            stripbin=strip
-        fi
-        if command -v "$stripbin" >/dev/null 2>&1; then
-            "$stripbin" --strip-all "$dest"
-        fi
-        test -x "$dest"
-    }
-    build_vtoycli gcc libfat_io_64.a "$ROOT/INSTALL/tool/x86_64/vtoycli"
-    build_vtoycli i686-linux-gnu-gcc libfat_io_32.a "$ROOT/INSTALL/tool/i386/vtoycli"
-    build_vtoycli aarch64-linux-gnu-gcc libfat_io_aa64.a "$ROOT/INSTALL/tool/aarch64/vtoycli"
-    build_vtoycli mips64el-linux-gnuabi64-gcc libfat_io_m64e.a "$ROOT/INSTALL/tool/mips64el/vtoycli" -mips64r2 -mabi=64
-)
 
 echo "=== linux tarball ==="
 cp -a "$ROOT/INSTALL/tool" "$pkg/"

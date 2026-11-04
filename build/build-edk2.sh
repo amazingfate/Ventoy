@@ -134,9 +134,12 @@ install_vtoy_shim() {
 
 mkdir -p "$OUT"
 for arch in "$@"; do
+    # GCC_BIN is the prefix for both X64 and IA32. Clear it on every arch so
+    # an IA32 build does not leave i686-linux-gnu- in place for X64.
+    export GCC_BIN=
     case "$arch" in
-        X64) prefix="" ;;
-        IA32) prefix="" ;;
+        X64) ;;
+        IA32) export GCC_BIN=i686-linux-gnu- ;;
         AARCH64) export GCC_AARCH64_PREFIX=aarch64-linux-gnu- ;;
         LOONGARCH64) export GCC_LOONGARCH64_PREFIX=loongarch64-linux-gnu- ;;
         *) echo "unknown arch $arch" >&2; exit 1 ;;
