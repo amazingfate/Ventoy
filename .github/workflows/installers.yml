@@ -69,15 +69,26 @@ jobs:
           $src = Join-Path $dest 'linux\lib\decompress_unxz.c'
           if (-not (Test-Path $src)) { throw "missing $src" }
           # git apply rejects this patch after core.autocrlf rewrites it.
-          # Dropping STATIC is the whole change: Ventoy calls unxz() from other files.
+          # Export unxz(), and do not compile the pre-boot memmove under MSVC.
           $text = [System.IO.File]::ReadAllText($src)
           $needle = 'STATIC int INIT unxz'
+          $changed = $false
           if ($text.Contains($needle)) {
             $text = $text.Replace($needle, 'int INIT unxz')
-            $utf8 = New-Object System.Text.UTF8Encoding $false
-            [System.IO.File]::WriteAllText($src, $text, $utf8)
+            $changed = $true
           } elseif (-not $text.Contains('int INIT unxz')) {
             throw 'unxz() entry point was not found'
+          }
+          # MSVC already provides memmove. The pre-boot copy collides with it.
+          $memmove = '#ifndef memmove'
+          $memmoveNew = '#if !defined(memmove) && !defined(_MSC_VER)'
+          if ($text.Contains($memmove) -and -not $text.Contains($memmoveNew)) {
+            $text = $text.Replace($memmove, $memmoveNew)
+            $changed = $true
+          }
+          if ($changed) {
+            $utf8 = New-Object System.Text.UTF8Encoding $false
+            [System.IO.File]::WriteAllText($src, $text, $utf8)
           }
           Write-Host "xz-embedded ready: $src"
 
@@ -121,6 +132,7 @@ jobs:
             /p:Platform=Win32 `
             /p:PlatformToolset=$best `
             /p:LanguageStandard_C=stdc17 `
+            /p:SDLCheck=false `
             /p:WindowsTargetPlatformVersion=$sdk `
             /m `
             /v:minimal
