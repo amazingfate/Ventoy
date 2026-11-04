@@ -113,11 +113,13 @@ install_vtoy_shim() {
     lvma_align=$(( (lvma + 4095) / 4096 * 4096 ))
     "$oc" --adjust-section-vma ".sbat=$(printf '0x%08x' "$lvma_align")" "$dst"
 
-    img_base=$("$od" -p "$dst" | awk '/ImageBase/ {print $2}')
-    size_img=$("$od" -p "$dst" | awk '/SizeOfImage/ {print $2}')
+    img_base=$("$od" -p "$dst" | awk '/ImageBase/ {print $2; exit}')
+    size_img=$("$od" -p "$dst" | awk '/SizeOfImage/ {print $2; exit}')
     sbat_end=$((lvma_align + sbat_size))
-    if [ "$img_base" != "0000000000000000" ]; then
-        echo "ImageBase of $name is $img_base" >&2
+    # PE32 objdump prints eight hex digits. PE32+ prints sixteen. A relocatable
+    # EFI image has image base zero in either form.
+    if [ -z "$img_base" ] || [ "$((0x$img_base))" -ne 0 ]; then
+        echo "ImageBase of $name is ${img_base:-missing}" >&2
         exit 1
     fi
     if [ "$((0x$size_img))" -lt "$sbat_end" ]; then
