@@ -76,7 +76,17 @@ echo "=== GRUB ==="
 sh "$ROOT/build/build-grub.sh" \
     x86_64-efi i386-efi arm64-efi loongarch64-efi mips64el-efi i386-pc
 test -f "$ROOT/build/out/images/core.img"
-test -f "$ROOT/build/out/images/BOOTX64.EFI"
+test -f "$ROOT/build/out/images/grubx64_real.efi"
+test -f "$ROOT/INSTALL/EFI/BOOT/BOOTX64.EFI"
+test -f "$ROOT/INSTALL/EFI/BOOT/mmx64.efi"
+if ! grep -a -q 'sbat,' "$ROOT/INSTALL/EFI/BOOT/BOOTX64.EFI"; then
+    echo "BOOTX64.EFI is not the signed shim" >&2
+    exit 1
+fi
+if grep -a -q 'GNU GRUB' "$ROOT/INSTALL/EFI/BOOT/BOOTX64.EFI"; then
+    echo "BOOTX64.EFI must stay the Rocky shim" >&2
+    exit 1
+fi
 test -f "$ROOT/build/out/images/BOOTIA32.EFI"
 test -f "$ROOT/build/out/images/BOOTAA64.EFI"
 test -f "$ROOT/build/out/images/BOOTLOONGARCH64.EFI"
@@ -298,7 +308,13 @@ install_built() {
     cp -a --no-preserve=ownership "$src" "$dest"
 }
 imgdir=$ROOT/build/out/images
-install_built "$imgdir/BOOTX64.EFI" "$mnt/EFI/BOOT/BOOTX64.EFI"
+# BOOTX64.EFI is the Rocky shim copied with INSTALL/EFI. Do not replace it
+# with GRUB. grubx64_real.efi is the image fbx64.efi chainloads.
+install_built "$imgdir/grubx64_real.efi" "$mnt/EFI/BOOT/grubx64_real.efi"
+if ! cmp -s "$ROOT/INSTALL/EFI/BOOT/BOOTX64.EFI" "$mnt/EFI/BOOT/BOOTX64.EFI"; then
+    echo "ESP BOOTX64.EFI is not the Rocky shim" >&2
+    exit 1
+fi
 install_built "$imgdir/BOOTIA32.EFI" "$mnt/EFI/BOOT/BOOTIA32.EFI"
 install_built "$imgdir/BOOTAA64.EFI" "$mnt/EFI/BOOT/BOOTAA64.EFI"
 install_built "$imgdir/BOOTLOONGARCH64.EFI" "$mnt/EFI/BOOT/BOOTLOONGARCH64.EFI"
@@ -337,9 +353,30 @@ if [ -f "$ROOT/INSTALL/tool/ENROLL_THIS_KEY_IN_MOKMANAGER.cer" ]; then
     cp -a --no-preserve=ownership "$ROOT/INSTALL/tool/ENROLL_THIS_KEY_IN_MOKMANAGER.cer" "$mnt/"
 fi
 
-# Secure Boot signing stays off unless VENTOY_CERT_KEY and VENTOY_CERT_PEM
-# are provided. Each shim's placeholder becomes the hash of the GRUB image
-# it loads.
+# BOOTX64.EFI is already signed by Microsoft and must not be signed again.
+# VtoyShim checks the on-disk GRUB hash, so sign grub*_real.efi first.
+# Without VENTOY_CERT_KEY and VENTOY_CERT_PEM this is the same NO-CA path
+# as INSTALL/ventoy_pack.sh.
+sign_efi() {
+    efi=$1
+    if [ ! -f "$efi" ]; then
+        echo "### $efi non-exist"
+        return 0
+    fi
+    if [ -z "${VENTOY_CERT_KEY:-}" ] || [ -z "${VENTOY_CERT_PEM:-}" ]; then
+        echo "### $efi NO-CA"
+        return 0
+    fi
+    if ! command -v sbsign >/dev/null 2>&1; then
+        apt-get install -y --no-install-recommends sbsigntool
+    fi
+    rm -f "${efi}.signed"
+    sbsign --key "$VENTOY_CERT_KEY" --cert "$VENTOY_CERT_PEM" --output "${efi}.signed" "$efi"
+    mv "${efi}.signed" "$efi"
+    echo "### $efi signed"
+}
+
+# Each shim's placeholder becomes the hash of the GRUB image it loads.
 inject_grub_hash() {
     shim=$1
     grub=$2
@@ -356,9 +393,15 @@ inject_grub_hash() {
     python3 -c 'import sys; sys.stdout.buffer.write(bytes.fromhex(sys.argv[1]))' "$grub_sha256" > "$hashbin"
     dd if="$hashbin" bs=1 count=32 of="$mnt/EFI/BOOT/$shim" seek="$magic_off" conv=notrunc status=none
 }
+sign_efi "$mnt/EFI/BOOT/grubx64_real.efi"
+sign_efi "$mnt/EFI/BOOT/grubia32_real.efi"
+sign_efi "$mnt/EFI/BOOT/grubaa64_real.efi"
 inject_grub_hash fbx64.efi grubx64_real.efi
 inject_grub_hash fbia32.efi grubia32_real.efi
 inject_grub_hash fbaa64.efi grubaa64_real.efi
+sign_efi "$mnt/EFI/BOOT/fbx64.efi"
+sign_efi "$mnt/EFI/BOOT/fbia32.efi"
+sign_efi "$mnt/EFI/BOOT/fbaa64.efi"
 
 sync
 umount "$mnt"

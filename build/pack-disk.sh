@@ -58,7 +58,11 @@ stage_bytes() {
     du -sb "$STAGE" | awk '{print $1}'
 }
 
-copy_efi BOOTX64.EFI "$OUT/images/BOOTX64.EFI"
+# BOOTX64.EFI is the signed Rocky shim. GRUB is grubx64_real.efi.
+copy_efi BOOTX64.EFI "$ROOT/INSTALL/EFI/BOOT/BOOTX64.EFI"
+copy_efi mmx64.efi "$ROOT/INSTALL/EFI/BOOT/mmx64.efi"
+copy_efi fbx64.efi "$ROOT/INSTALL/EFI/BOOT/fbx64.efi"
+copy_efi grubx64_real.efi "$ROOT/INSTALL/EFI/BOOT/grubx64_real.efi"
 copy_efi BOOTIA32.EFI "$OUT/images/BOOTIA32.EFI"
 
 # Payload that is still shipped as data (Windows boot files, memdisk, ipxe).
@@ -149,7 +153,6 @@ upgrade_full() {
     rm -f "$mark"
 }
 
-copy_boot BOOTX64.EFI
 copy_boot BOOTIA32.EFI
 copy_boot BOOTAA64.EFI
 copy_boot BOOTLOONGARCH64.EFI

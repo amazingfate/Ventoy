@@ -71,10 +71,13 @@ configure_one() {
     case "$target" in
         x86_64-efi)
             mods="part_gpt part_msdos fat exfat ntfs ext2 xfs iso9660 udf squash4 loopback linux normal configfile test echo search gzio xzio ventoy"
-            "$prefix_bin/bin/grub-mkimage" -O x86_64-efi -p '(,2)/grub' -o "$OUT/images/BOOTX64.EFI" $mods
-            # Shim loads this name. fbx64.efi checks its hash at pack time.
-            mkdir -p "$ROOT/INSTALL/EFI/BOOT"
-            "$prefix_bin/bin/grub-mkimage" -O x86_64-efi -p '(,2)/grub' -o "$ROOT/INSTALL/EFI/BOOT/grubx64_real.efi" $mods
+            # Firmware loads EFI/BOOT/BOOTX64.EFI. That name stays the
+            # Microsoft-signed Rocky shim shipped in INSTALL/EFI/BOOT.
+            # GRUB is grubx64_real.efi; fbx64.efi checks its hash and chainloads it.
+            mkdir -p "$ROOT/INSTALL/EFI/BOOT" "$OUT/images"
+            "$prefix_bin/bin/grub-mkimage" -O x86_64-efi -p '(,2)/grub' \
+                -o "$ROOT/INSTALL/EFI/BOOT/grubx64_real.efi" $mods
+            cp -a "$ROOT/INSTALL/EFI/BOOT/grubx64_real.efi" "$OUT/images/grubx64_real.efi"
             live_mods="search iso9660 fat part_msdos part_gpt configfile normal linux echo test gzio"
             "$prefix_bin/bin/grub-mkimage" -O x86_64-efi -p '/EFI/boot' \
                 -c "$ROOT/LiveCDGUI/GRUB/embed.cfg" \
