@@ -87,7 +87,18 @@ if grep -a -q 'GNU GRUB' "$ROOT/INSTALL/EFI/BOOT/BOOTX64.EFI"; then
     echo "BOOTX64.EFI must stay the Rocky shim" >&2
     exit 1
 fi
-test -f "$ROOT/build/out/images/BOOTIA32.EFI"
+test -f "$ROOT/INSTALL/EFI/BOOT/BOOTIA32.EFI"
+test -f "$ROOT/INSTALL/EFI/BOOT/grubia32.efi"
+test -f "$ROOT/INSTALL/EFI/BOOT/mmia32.efi"
+if ! grep -a -q 'sbat,' "$ROOT/INSTALL/EFI/BOOT/BOOTIA32.EFI"; then
+    echo "BOOTIA32.EFI is not the signed shim" >&2
+    exit 1
+fi
+if grep -a -q 'GNU GRUB' "$ROOT/INSTALL/EFI/BOOT/BOOTIA32.EFI"; then
+    echo "BOOTIA32.EFI must stay the Super-UEFIinSecureBoot-Disk shim" >&2
+    exit 1
+fi
+test -f "$ROOT/build/out/images/grubia32_real.efi"
 test -f "$ROOT/build/out/images/BOOTAA64.EFI"
 test -f "$ROOT/build/out/images/BOOTLOONGARCH64.EFI"
 test -f "$ROOT/build/out/images/BOOTMIPS.EFI"
@@ -315,7 +326,18 @@ if ! cmp -s "$ROOT/INSTALL/EFI/BOOT/BOOTX64.EFI" "$mnt/EFI/BOOT/BOOTX64.EFI"; th
     echo "ESP BOOTX64.EFI is not the Rocky shim" >&2
     exit 1
 fi
-install_built "$imgdir/BOOTIA32.EFI" "$mnt/EFI/BOOT/BOOTIA32.EFI"
+# BOOTIA32.EFI is the Super-UEFIinSecureBoot-Disk shim copied with
+# INSTALL/EFI. Do not replace it with GRUB. grubia32.efi chainloads
+# grubia32_real.efi.
+install_built "$imgdir/grubia32_real.efi" "$mnt/EFI/BOOT/grubia32_real.efi"
+if ! cmp -s "$ROOT/INSTALL/EFI/BOOT/BOOTIA32.EFI" "$mnt/EFI/BOOT/BOOTIA32.EFI"; then
+    echo "ESP BOOTIA32.EFI is not the upstream shim" >&2
+    exit 1
+fi
+if ! cmp -s "$ROOT/INSTALL/EFI/BOOT/grubia32.efi" "$mnt/EFI/BOOT/grubia32.efi"; then
+    echo "ESP grubia32.efi is not the upstream loader" >&2
+    exit 1
+fi
 install_built "$imgdir/BOOTAA64.EFI" "$mnt/EFI/BOOT/BOOTAA64.EFI"
 install_built "$imgdir/BOOTLOONGARCH64.EFI" "$mnt/EFI/BOOT/BOOTLOONGARCH64.EFI"
 install_built "$imgdir/BOOTMIPS.EFI" "$mnt/EFI/BOOT/BOOTMIPS.EFI"

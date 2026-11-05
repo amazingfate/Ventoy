@@ -86,9 +86,13 @@ configure_one() {
             ;;
         i386-efi)
             mods="part_gpt part_msdos fat exfat ntfs ext2 iso9660 linux normal configfile test echo search gzio ventoy"
-            "$prefix_bin/bin/grub-mkimage" -O i386-efi -p '(,2)/grub' -o "$OUT/images/BOOTIA32.EFI" $mods
-            mkdir -p "$ROOT/INSTALL/EFI/BOOT"
-            "$prefix_bin/bin/grub-mkimage" -O i386-efi -p '(,2)/grub' -o "$ROOT/INSTALL/EFI/BOOT/grubia32_real.efi" $mods
+            # Firmware loads EFI/BOOT/BOOTIA32.EFI. That name stays the
+            # Super-UEFIinSecureBoot-Disk shim shipped in INSTALL/EFI/BOOT.
+            # The shim loads grubia32.efi, which chainloads grubia32_real.efi.
+            mkdir -p "$ROOT/INSTALL/EFI/BOOT" "$OUT/images"
+            "$prefix_bin/bin/grub-mkimage" -O i386-efi -p '(,2)/grub' \
+                -o "$ROOT/INSTALL/EFI/BOOT/grubia32_real.efi" $mods
+            cp -a "$ROOT/INSTALL/EFI/BOOT/grubia32_real.efi" "$OUT/images/grubia32_real.efi"
             ;;
         arm64-efi)
             mods="part_gpt part_msdos fat exfat ntfs ext2 xfs iso9660 udf squash4 loopback linux normal configfile test echo search gzio xzio ventoy"

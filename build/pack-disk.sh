@@ -63,7 +63,12 @@ copy_efi BOOTX64.EFI "$ROOT/INSTALL/EFI/BOOT/BOOTX64.EFI"
 copy_efi mmx64.efi "$ROOT/INSTALL/EFI/BOOT/mmx64.efi"
 copy_efi fbx64.efi "$ROOT/INSTALL/EFI/BOOT/fbx64.efi"
 copy_efi grubx64_real.efi "$ROOT/INSTALL/EFI/BOOT/grubx64_real.efi"
-copy_efi BOOTIA32.EFI "$OUT/images/BOOTIA32.EFI"
+# BOOTIA32.EFI is the Super-UEFIinSecureBoot-Disk shim. The shim loads
+# grubia32.efi, which chainloads grubia32_real.efi.
+copy_efi BOOTIA32.EFI "$ROOT/INSTALL/EFI/BOOT/BOOTIA32.EFI"
+copy_efi grubia32.efi "$ROOT/INSTALL/EFI/BOOT/grubia32.efi"
+copy_efi mmia32.efi "$ROOT/INSTALL/EFI/BOOT/mmia32.efi"
+copy_efi grubia32_real.efi "$ROOT/INSTALL/EFI/BOOT/grubia32_real.efi"
 
 # Payload that is still shipped as data (Windows boot files, memdisk, ipxe).
 # EFI applications built in this tree replace the matching prebuilt files.
@@ -153,7 +158,6 @@ upgrade_full() {
     rm -f "$mark"
 }
 
-copy_boot BOOTIA32.EFI
 copy_boot BOOTAA64.EFI
 copy_boot BOOTLOONGARCH64.EFI
 copy_boot BOOTMIPS.EFI
