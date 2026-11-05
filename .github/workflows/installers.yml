@@ -172,12 +172,42 @@ jobs:
           Copy-Item $exe64.FullName artifacts\Ventoy2Disk_X64.exe
           Get-Item artifacts\Ventoy2Disk.exe, artifacts\Ventoy2Disk_X64.exe | Format-List FullName, Length
 
+      # archive:false uploads the tar.gz itself. download-artifact still
+      # unzips when blob storage labels that file as a zip, so the Windows
+      # job fetches the raw bytes instead.
       - name: Download the Linux installer payload
-        uses: actions/download-artifact@v7
-        with:
-          pattern: ventoy-*-linux.tar.gz
-          path: linux-pkg
-          merge-multiple: true
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $ProgressPreference = 'SilentlyContinue'
+          $PSNativeCommandUseErrorActionPreference = $false
+          $list = & gh api "repos/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID/artifacts?per_page=100"
+          if ($LASTEXITCODE -ne 0) { throw "artifact list failed: $LASTEXITCODE" }
+          $resp = $list | ConvertFrom-Json
+          $art = @($resp.artifacts | Where-Object {
+            $_.name -like 'ventoy-*-linux.tar.gz' -and -not $_.expired
+          }) | Select-Object -First 1
+          if (-not $art) { throw 'Linux installer artifact was not found' }
+          New-Item -ItemType Directory -Force -Path linux-pkg | Out-Null
+          $out = Join-Path (Get-Location) "linux-pkg\$($art.name)"
+          $url = "https://api.github.com/repos/$env:GITHUB_REPOSITORY/actions/artifacts/$($art.id)/zip"
+          & curl.exe -fL --retry 5 --retry-all-errors --retry-delay 2 `
+            -H "Authorization: Bearer $env:GH_TOKEN" `
+            -H "Accept: application/vnd.github+json" `
+            -H "X-GitHub-Api-Version: 2022-11-28" `
+            -o $out `
+            $url
+          if ($LASTEXITCODE -ne 0) { throw "curl failed: $LASTEXITCODE" }
+          $fs = [System.IO.File]::OpenRead($out)
+          $buf = New-Object byte[] 2
+          [void]$fs.Read($buf, 0, 2)
+          $fs.Close()
+          if ($buf[0] -ne 0x1f -or $buf[1] -ne 0x8b) {
+            throw "downloaded $($art.name) is not a gzip file"
+          }
+          Get-Item $out | Format-List FullName, Length
 
       - name: Pack the Windows installer
         shell: pwsh
