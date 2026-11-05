@@ -100,6 +100,11 @@ CONST CHAR16 *gEfiBootFileName[] =
     L"\\EFI\\BOOT\\BOOTaa64.EFI",
     L"\\EFI\\BOOT\\bootaa64.efi",
     L"\\efi\\boot\\bootaa64.efi",
+#elif defined (MDE_CPU_LOONGARCH64)
+    L"\\EFI\\BOOT\\GRUBLOONGARCH64.EFI",
+    L"\\EFI\\BOOT\\BOOTLOONGARCH64.EFI",
+    L"\\EFI\\BOOT\\bootloongarch64.efi",
+    L"\\efi\\boot\\bootloongarch64.efi",
 #endif
 
 };
