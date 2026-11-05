@@ -232,6 +232,9 @@ jobs:
             )) {
             if (-not (Test-Path (Join-Path $dir.FullName $rel))) { throw "Linux package is missing $rel" }
           }
+          $plugson = Join-Path $dir.FullName 'tool\plugson.tar.xz'
+          if (-not (Test-Path $plugson)) { throw 'Linux package is missing tool/plugson.tar.xz' }
+          Copy-Item $plugson (Join-Path $dir.FullName 'ventoy\plugson.tar.xz')
           foreach ($name in @('tool', 'WebUI')) {
             $path = Join-Path $dir.FullName $name
             if (Test-Path $path) { Remove-Item -Recurse -Force $path }
@@ -260,7 +263,8 @@ jobs:
               "$($dir.Name)/boot/core.img.xz",
               "$($dir.Name)/ventoy/ventoy.disk.img.xz",
               "$($dir.Name)/ventoy/version",
-              "$($dir.Name)/ventoy/languages.json"
+              "$($dir.Name)/ventoy/languages.json",
+              "$($dir.Name)/ventoy/plugson.tar.xz"
             )) {
             if ($listing -notcontains $need) { throw "windows zip is missing $need" }
           }

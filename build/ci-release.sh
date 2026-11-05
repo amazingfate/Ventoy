@@ -34,7 +34,7 @@ apt-get update
 apt-get install -y --no-install-recommends \
     git patch dos2unix file \
     dosfstools fdisk parted \
-    squashfs-tools xorriso cpio xz-utils \
+    squashfs-tools xorriso cpio xz-utils 7zip \
     bsdextrautils python3 \
     libgtk-3-dev pkg-config
 
@@ -174,6 +174,96 @@ echo "=== vtoycli ==="
     build_vtoycli aarch64-linux-gnu-gcc libfat_io_aa64.a "$ROOT/INSTALL/tool/aarch64/vtoycli"
     build_vtoycli mips64el-linux-gnuabi64-gcc libfat_io_m64e.a "$ROOT/INSTALL/tool/mips64el/vtoycli" -mips64r2 -mabi=64
 )
+
+echo "=== vtoygpt ==="
+# Host-side GPT helper shipped as tool/*/vtoygpt.xz. The initramfs calls
+# vtoytool's vtoygpt applet instead, so this binary is only for the installer.
+(
+    cd "$ROOT/vtoygpt"
+    build_vtoygpt() {
+        cc=$1
+        dest=$2
+        shift 2
+        # shellcheck disable=SC2086
+        $cc "$@" -Os -static -D_FILE_OFFSET_BITS=64 \
+            vtoygpt.c crc32.c -o "$dest"
+        stripbin=${cc%gcc}strip
+        if [ "$cc" = "gcc" ]; then
+            stripbin=strip
+        fi
+        if command -v "$stripbin" >/dev/null 2>&1; then
+            "$stripbin" --strip-all "$dest"
+        fi
+        test -x "$dest"
+    }
+    build_vtoygpt gcc "$ROOT/INSTALL/tool/x86_64/vtoygpt"
+    build_vtoygpt i686-linux-gnu-gcc "$ROOT/INSTALL/tool/i386/vtoygpt"
+    build_vtoygpt aarch64-linux-gnu-gcc "$ROOT/INSTALL/tool/aarch64/vtoygpt"
+    build_vtoygpt mips64el-linux-gnuabi64-gcc "$ROOT/INSTALL/tool/mips64el/vtoygpt" -mips64r2 -mabi=64
+)
+
+echo "=== plugson web UI ==="
+# Plugson/pack.sh also demands the Windows exes. The tar itself is www/.
+plugson_stage=$ROOT/build/work/plugson
+rm -rf "$plugson_stage"
+mkdir -p "$plugson_stage"
+cp -a "$ROOT/Plugson/www" "$plugson_stage/www"
+: > "$plugson_stage/www/helplist"
+ls -1 "$ROOT/INSTALL/grub/help" | while read -r line; do
+    printf '%s' "$(printf '%s' "$line" | cut -c1-5)" >> "$plugson_stage/www/helplist"
+done
+: > "$plugson_stage/www/menulist"
+ls -1 "$ROOT/INSTALL/grub/menu" | while read -r line; do
+    printf '%s' "$(printf '%s' "$line" | cut -c1-5)" >> "$plugson_stage/www/menulist"
+done
+date '+%Y%m%d %H:%M:%S' > "$plugson_stage/www/buildtime"
+tar -C "$plugson_stage" -cf "$plugson_stage/www.tar" www
+xz --check=crc32 "$plugson_stage/www.tar"
+mv "$plugson_stage/www.tar.xz" "$ROOT/INSTALL/tool/plugson.tar.xz"
+test -s "$ROOT/INSTALL/tool/plugson.tar.xz"
+
+echo "=== 7za ==="
+# Official 1.1.18 ships 7-Zip 19.00 extra. ventoy-7zip-2605 is a later build
+# and its hashes do not match that release.
+if command -v 7z >/dev/null 2>&1; then
+    sevenz=7z
+elif command -v 7zz >/dev/null 2>&1; then
+    sevenz=7zz
+else
+    echo "7-Zip is not installed" >&2
+    exit 1
+fi
+z7=$("$ROOT/build/download.sh" "https://www.7-zip.org/a/7z1900-extra.7z" "7z1900-extra.7z")
+zdir=$ROOT/build/work/7zextra
+rm -rf "$zdir"
+mkdir -p "$zdir"
+"$sevenz" x -y "-o$zdir" "$z7" 7za.exe x64/7za.exe >/dev/null
+hash32=$(sha256sum "$zdir/7za.exe" | awk '{print $1}')
+hash64=$(sha256sum "$zdir/x64/7za.exe" | awk '{print $1}')
+if [ "$hash32" != "ea308c76a2f927b160a143d94072b0dce232e04b751f0c6432a94e05164e716d" ]; then
+    echo "7za.exe hash is $hash32" >&2
+    exit 1
+fi
+if [ "$hash64" != "8117e40ee7f824f63373a4f5625bb62749f69159d0c449b3ce2f35aad3b83549" ]; then
+    echo "x64/7za.exe hash is $hash64" >&2
+    exit 1
+fi
+mkdir -p "$ROOT/INSTALL/ventoy/7z/32" "$ROOT/INSTALL/ventoy/7z/64"
+rm -f "$ROOT/INSTALL/ventoy/7z/32/7za" "$ROOT/INSTALL/ventoy/7z/32/7za.xz"
+rm -f "$ROOT/INSTALL/ventoy/7z/64/7za" "$ROOT/INSTALL/ventoy/7z/64/7za.xz"
+cp -a "$zdir/7za.exe" "$ROOT/INSTALL/ventoy/7z/32/7za"
+cp -a "$zdir/x64/7za.exe" "$ROOT/INSTALL/ventoy/7z/64/7za"
+xz --check=crc32 "$ROOT/INSTALL/ventoy/7z/32/7za"
+xz --check=crc32 "$ROOT/INSTALL/ventoy/7z/64/7za"
+test -s "$ROOT/INSTALL/ventoy/7z/32/7za.xz"
+test -s "$ROOT/INSTALL/ventoy/7z/64/7za.xz"
+
+echo "=== vtloopex ==="
+(
+    cd "$ROOT/IMG"
+    bash ./mkloopex.sh
+)
+test -s "$ROOT/INSTALL/ventoy/vtloopex.cpio"
 
 echo "=== installer disk image ==="
 ver=$(sed -n 's/.*VENTOY_VERSION="\([^"]*\)".*/\1/p' "$ROOT/INSTALL/grub/grub.cfg" | head -1)
