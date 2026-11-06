@@ -61,13 +61,7 @@ build_func() {
     if [ "$libsuffix" = "aa64" ]; then
         aarch64-linux-gnu-strip Plugson$libsuffix
     elif [ "$libsuffix" = "m64e" ]; then
-        if command -v mips64el-linux-gnuabi64-strip >/dev/null 2>&1; then
-            mips64el-linux-gnuabi64-strip Plugson$libsuffix
-        else
-            mips-linux-gnu-strip Plugson$libsuffix
-        fi
-    elif [ "$libsuffix" = "32" ] && command -v i686-linux-gnu-strip >/dev/null 2>&1; then
-        i686-linux-gnu-strip Plugson$libsuffix
+        mips-linux-gnu-strip Plugson$libsuffix
     else
         strip Plugson$libsuffix
     fi
@@ -77,24 +71,8 @@ build_func() {
     
 }
 
-if echo 'int main(void){return 0;}' | gcc -m32 -x c -o /tmp/vt-m32 - >/dev/null 2>&1; then
-    cc32="gcc -m32"
-else
-    cc32="i686-linux-gnu-gcc"
-fi
-rm -f /tmp/vt-m32
-
-if command -v mips64el-linux-gnuabi64-gcc >/dev/null 2>&1; then
-    ccmips="mips64el-linux-gnuabi64-gcc -mips64r2 -mabi=64"
-elif command -v mips-linux-gnu-gcc >/dev/null 2>&1; then
-    ccmips="mips-linux-gnu-gcc -mips64r2 -mabi=64"
-else
-    echo "no mips64el compiler" >&2
-    exit 1
-fi
-
-build_func "gcc" '64' 'x86_64' || exit 1
-build_func "$cc32" '32' 'i386' || exit 1
-build_func "aarch64-linux-gnu-gcc" 'aa64' 'aarch64' || exit 1
-build_func "$ccmips" 'm64e' 'mips64el' || exit 1
+build_func "gcc" '64' 'x86_64'
+build_func "gcc -m32" '32' 'i386'
+build_func "aarch64-linux-gnu-gcc" 'aa64' 'aarch64'
+build_func "mips-linux-gnu-gcc -mips64r2 -mabi=64" 'm64e' 'mips64el'
 
