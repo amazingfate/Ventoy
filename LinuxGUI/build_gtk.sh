@@ -85,8 +85,8 @@ build_func() {
     cp -a VentoyGUI.$toolDir ../INSTALL/
 }
 
-# Debian trixie can build the host GTK3 UI. The other targets need GTK2 or
-# the prebuilt EXLIB trees, which this image does not carry.
+# CI rebuilds only the host GTK3 UI. The 64 MiB ESP check is compiled into
+# it. The other targets need GTK2 or the prebuilt EXLIB trees.
 if [ "${1:-}" = "x86_64-gtk3" ]; then
     build_func "gcc" '64' 'x86_64' 'gtk3' || exit 1
     exit 0

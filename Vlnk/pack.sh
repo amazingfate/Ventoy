@@ -1,12 +1,7 @@
 #!/bin/sh
 
-cd "$(dirname "$0")"
-
+rm -f ../INSTALL/VentoyVlnk.sh
 cp -a ./VentoyVlnk.sh ../INSTALL/VentoyVlnk.sh
 
-exe=./vs/VentoyVlnk/Release/VentoyVlnk.exe
-if [ -f "$exe" ]; then
-    cp -a "$exe" ../INSTALL/VentoyVlnk.exe
-else
-    echo "VentoyVlnk.exe is not built. Open Vlnk/vs/VentoyVlnk/VentoyVlnk.sln on Windows."
-fi
+rm -f ../INSTALL/VentoyVlnk.exe
+cp -a ./vs/VentoyVlnk/Release/VentoyVlnk.exe   ../INSTALL/VentoyVlnk.exe
