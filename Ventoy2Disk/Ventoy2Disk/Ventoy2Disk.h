@@ -42,7 +42,11 @@ typedef enum VTOY_FS
 #define SIZE_1TB					(1024ULL * 1024ULL * 1024ULL * 1024ULL)
 #define SIZE_1MB                    (1024 * 1024)
 #define SIZE_2MB                    (2048 * 1024)
-#define VENTOY_EFI_PART_SIZE	    (32 * SIZE_1MB)
+/* New disks get a 64 MiB ESP. A disk written at 32 MiB is still recognized. */
+#define VENTOY_EFI_PART_SIZE_LEGACY (32 * SIZE_1MB)
+#define VENTOY_EFI_PART_SIZE	    (64 * SIZE_1MB)
+#define VENTOY_EFI_PART_LEGACY_SECTORS (VENTOY_EFI_PART_SIZE_LEGACY / 512)
+#define VENTOY_EFI_PART_SECTORS     (VENTOY_EFI_PART_SIZE / 512)
 #define VENTOY_PART1_START_SECTOR    2048
 
 #define VENTOY_FILE_BOOT_IMG    "boot\\boot.img"
@@ -198,6 +202,7 @@ typedef struct PHY_DRIVE_INFO
     CHAR ResizeVolumeGuid[64];
 	CHAR FsName[64];
 	UINT64 ResizePart2StartSector;
+	UINT64 Part2SectorCount;
 	VTOY_GPT_INFO Gpt;
 
 }PHY_DRIVE_INFO;
@@ -273,10 +278,10 @@ int VentoyFillWholeGpt(UINT64 DiskSizeBytes, VTOY_GPT_INFO *pInfo);
 void SetProgressBarPos(int Pos);
 int SaveBufToFile(const CHAR *FileName, const void *Buffer, int BufLen);
 int ReadWholeFileToBuf(const CHAR *FileName, int ExtLen, void **Bufer, int *BufLen);
-int INIT unxz(unsigned char *in, int in_size,
-    int(*fill)(void *dest, unsigned int size),
-    int(*flush)(void *src, unsigned int size),
-    unsigned char *out, int *in_used,
+int INIT unxz(unsigned char *in, long in_size,
+    long(*fill)(void *dest, unsigned long size),
+    long(*flush)(void *src, unsigned long size),
+    unsigned char *out, long *in_used,
     void(*error)(char *x));
 void disk_io_set_param(HANDLE Handle, UINT64 SectorCount);
 int GetVolumeClusterSize(char Drive);
@@ -375,7 +380,7 @@ void VentoyStringToUpper(CHAR* str);
 BOOL AlertSuppressInit(void);
 void SetAlertPromptHookEnable(BOOL enable);
 int VentoyCLIMain(int argc, char** argv);
-BOOL IsVentoyPhyDrive(int PhyDrive, UINT64 SizeBytes, MBR_HEAD* pMBR, UINT64* Part2StartSector, UINT64* GptPart2Attr);
+BOOL IsVentoyPhyDrive(int PhyDrive, UINT64 SizeBytes, MBR_HEAD* pMBR, UINT64* Part2StartSector, UINT64* GptPart2Attr, UINT64* Part2SectorCount);
 int GetVentoyFsNameInPhyDrive(PHY_DRIVE_INFO* CurDrive);
 void CLISetReserveSpace(int MB);
 void CLI_UpdatePercent(int Pos);

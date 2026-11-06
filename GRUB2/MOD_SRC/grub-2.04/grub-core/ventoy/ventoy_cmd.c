@@ -555,6 +555,12 @@ static int ventoy_set_check_result(int ret, const char *msg)
     return ret;
 }
 
+/* 65536 and 131072 sectors are 32 and 64 MiB. New disks use 64 MiB. */
+static int ventoy_esp_sectors_ok(grub_uint64_t sectors)
+{
+    return sectors == 65536 || sectors == 131072;
+}
+
 static int ventoy_check_official_device(grub_device_t dev)
 {
     int workaround = 0;
@@ -629,7 +635,7 @@ static int ventoy_check_official_device(grub_device_t dev)
         {
             ventoy_gpt_part_tbl *PartTbl = g_ventoy_part_info->PartTbl;
             if (PartTbl[1].StartLBA != PartTbl[0].LastLBA + 1 ||
-                (PartTbl[1].LastLBA + 1 - PartTbl[1].StartLBA) != 65536)
+                !ventoy_esp_sectors_ok(PartTbl[1].LastLBA + 1 - PartTbl[1].StartLBA))
             {
                 grub_file_close(file);
                 return ventoy_set_check_result(6, "Disk partition layout check failed.");
@@ -639,7 +645,7 @@ static int ventoy_check_official_device(grub_device_t dev)
         {
             ventoy_part_table *PartTbl = g_ventoy_part_info->MBR.PartTbl;
             if (PartTbl[1].StartSectorId != PartTbl[0].StartSectorId + PartTbl[0].SectorCount ||
-                PartTbl[1].SectorCount != 65536)
+                !ventoy_esp_sectors_ok(PartTbl[1].SectorCount))
             {
                 grub_file_close(file);
                 return ventoy_set_check_result(6, "Disk partition layout check failed.");
@@ -650,7 +656,7 @@ static int ventoy_check_official_device(grub_device_t dev)
     {
         offset = partition->start + partition->len;
         partition = file->device->disk->partition;
-        if ((partition->number != 1) || (partition->len != 65536) || (offset != partition->start))
+        if ((partition->number != 1) || !ventoy_esp_sectors_ok(partition->len) || (offset != partition->start))
         {
             grub_file_close(file);
             return ventoy_set_check_result(7, "Disk partition layout check failed.");

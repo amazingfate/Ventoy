@@ -46,6 +46,8 @@
 
 #define VTOYEFI_PART_BYTES    (32 * 1024 * 1024)
 #define VTOYEFI_PART_SECTORS  65536
+/* Install writes 64 MiB. Plugson still accepts a disk whose ESP is 32 MiB. */
+#define VTOYEFI_PART_SECTORS_OK(n)  ((n) == 65536 || (n) == 131072)
 
 
 #pragma pack(1)

@@ -1164,7 +1164,8 @@ STATIC BOOL VDS_CallBack_ChangeEFIAttr(void *pInterface, VDS_DISK_PROP *pDiskPro
     {
         for (i = 0; i < prop_array_size; i++)
         {
-            if (prop_array[i].ullSize == VENTOY_EFI_PART_SIZE &&
+            if ((prop_array[i].ullSize == VENTOY_EFI_PART_SIZE ||
+                 prop_array[i].ullSize == VENTOY_EFI_PART_SIZE_LEGACY) &&
                 prop_array[i].PartitionStyle == VDS_PST_GPT &&
                 memcmp(prop_array[i].Gpt.name, L"VTOYEFI", 7 * 2) == 0 &&
 				VdsPara->Offset == prop_array[i].ullOffset)
