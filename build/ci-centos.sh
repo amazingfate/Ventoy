@@ -62,6 +62,8 @@ need_built "$ROOT/INSTALL/tool/loongarch64/ash"
 need_built "$ROOT/INSTALL/tool/loongarch64/xzcat"
 need_built "$ROOT/INSTALL/tool/loongarch64/vtoycli"
 need_built "$ROOT/INSTALL/tool/loongarch64/mkexfatfs"
+need_built "$ROOT/INSTALL/tool/loongarch64/Ventoy2Disk.gtk3"
+need_built "$ROOT/INSTALL/VentoyGUI.loongarch64"
 
 echo "=== CentOS packages ==="
 # p7zip is in the EPEL 7 archive. The EL7 key is expired, so the repo
@@ -158,6 +160,8 @@ echo "=== GTK3 x86_64 ==="
 test -f "$ROOT/INSTALL/VentoyGUI.x86_64"
 test -f "$ROOT/INSTALL/tool/x86_64/Ventoy2Disk.gtk3"
 check_elf "$ROOT/INSTALL/VentoyGUI.x86_64" "x86-64"
+check_loongarch_elf "$ROOT/INSTALL/VentoyGUI.loongarch64"
+check_loongarch_elf "$ROOT/INSTALL/tool/loongarch64/Ventoy2Disk.gtk3"
 
 echo "=== VentoyVlnk.sh ==="
 ( cd "$ROOT/Vlnk" && sh pack.sh )

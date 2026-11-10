@@ -2,8 +2,9 @@
 # Static installer tools for a LoongArch machine creating a Ventoy disk.
 # CentOS 7 has no loongarch64 compiler, so Debian trixie builds these and
 # ci-centos.sh only packs INSTALL/tool/loongarch64 into the release.
-# GTK and Qt stay out: this tree has no LoongArch GUI sysroot. Ventoy2Disk.sh
-# and VentoyWeb.sh are the installers.
+# The GTK3 UI is linked against libgtk-3-dev:loong64 from
+# https://loong13.debian.net/. Qt stays out: its code generator has to run
+# on the build machine, and the loong64 qmake cannot.
 
 set -eu
 
@@ -123,3 +124,12 @@ for bin in ash hexdump xzcat vtoycli vtoygpt vlnk mkexfatfs V2DServer Plugson; d
     fi
     echo "ok $bin"
 done
+
+echo "=== GTK3 ==="
+sh "$ROOT/build/install-loong64-gtk.sh"
+( cd "$ROOT/LinuxGUI" && bash -e ./build_gtk.sh loongarch64 )
+rm -f "$ROOT/LinuxGUI/Ventoy2Disk.gtk3_la64" "$ROOT/LinuxGUI/VentoyGUI.loongarch64" "$ROOT/LinuxGUI/civetweb.o"
+is_loongarch "$OUT/Ventoy2Disk.gtk3"
+is_loongarch "$ROOT/INSTALL/VentoyGUI.loongarch64"
+echo "ok Ventoy2Disk.gtk3"
+echo "ok VentoyGUI.loongarch64"
