@@ -151,4 +151,9 @@ compile_vtoytool i386 i686-linux-gnu- ""
 compile_vtoytool aarch64 aarch64-linux-gnu- ""
 compile_vtoytool mips64el mips64el-linux-gnuabi64- "-mabi=64"
 
+echo "=== loongarch64 host installer ==="
+# A LoongArch machine running Ventoy2Disk.sh needs its own ash, xzcat,
+# vtoycli and V2DServer. CentOS 7 cannot compile them.
+sh "$ROOT/build/build-host-loongarch.sh"
+
 echo "trixie outputs are in build/out. Pack with build/ci-centos.sh."

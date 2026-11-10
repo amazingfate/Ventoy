@@ -296,7 +296,7 @@ rm -f ventoy-${curver}-linux.tar.gz
 
 CurDir=$PWD
 
-for d in i386 x86_64 aarch64 mips64el; do
+for d in i386 x86_64 aarch64 mips64el loongarch64; do
     cd $tmpdir/tool/$d
     for file in $(ls); do
         if [ "$file" != "xzcat" ]; then
@@ -320,7 +320,7 @@ chmod +x $tmpdir/VentoyVlnk.sh
 chmod +x $tmpdir/VentoyGUI*
 chmod +x $tmpdir/tool/*.sh
 
-for d in i386 x86_64 aarch64 mips64el; do
+for d in i386 x86_64 aarch64 mips64el loongarch64; do
     chmod +x $tmpdir/tool/$d/xzcat
     chmod +x $tmpdir/tool/$d/Ventoy2Disk.*
 done

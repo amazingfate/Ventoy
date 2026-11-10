@@ -57,6 +57,11 @@ need_built "$ROOT/build/out/efifs/iso9660_loongarch64.efi"
 need_built "$ROOT/build/out/efifs/udf_loongarch64.efi"
 need_built "$ROOT/build/out/initramfs/loongarch64/busybox.xz"
 need_built "$ROOT/build/out/tools/loongarch64/ash"
+need_built "$ROOT/INSTALL/tool/loongarch64/V2DServer"
+need_built "$ROOT/INSTALL/tool/loongarch64/ash"
+need_built "$ROOT/INSTALL/tool/loongarch64/xzcat"
+need_built "$ROOT/INSTALL/tool/loongarch64/vtoycli"
+need_built "$ROOT/INSTALL/tool/loongarch64/mkexfatfs"
 
 echo "=== CentOS packages ==="
 # p7zip is in the EPEL 7 archive. The EL7 key is expired, so the repo
@@ -124,6 +129,18 @@ check_elf "$ROOT/INSTALL/tool/x86_64/V2DServer" "x86-64"
 check_elf "$ROOT/INSTALL/tool/i386/V2DServer" "i386|80386"
 check_elf "$ROOT/INSTALL/tool/aarch64/V2DServer" "aarch64"
 check_elf "$ROOT/INSTALL/tool/mips64el/V2DServer" "MIPS"
+check_loongarch_elf() {
+    bin=$1
+    if ! "$PY" -c 'import struct,sys
+d=open(sys.argv[1],"rb").read(20)
+m=struct.unpack_from("<H", d, 18)[0]
+sys.exit(0 if m == 258 else 1)' "$bin"; then
+        echo "$bin is not a LoongArch ELF" >&2
+        exit 1
+    fi
+    echo "ok $bin"
+}
+check_loongarch_elf "$ROOT/INSTALL/tool/loongarch64/V2DServer"
 
 echo "=== Plugson ==="
 # The recognition of a 64 MiB ESP is compiled into Plugson.
@@ -132,6 +149,7 @@ check_elf "$ROOT/INSTALL/tool/x86_64/Plugson" "x86-64"
 check_elf "$ROOT/INSTALL/tool/i386/Plugson" "i386|80386"
 check_elf "$ROOT/INSTALL/tool/aarch64/Plugson" "aarch64"
 check_elf "$ROOT/INSTALL/tool/mips64el/Plugson" "MIPS"
+check_loongarch_elf "$ROOT/INSTALL/tool/loongarch64/Plugson"
 
 echo "=== GTK3 x86_64 ==="
 # Upstream ventoy_pack.sh ships the prebuilt GTK binaries. The 64 MiB ESP
@@ -592,7 +610,7 @@ cp -a "$ROOT/LinuxGUI/WebUI" "$pkg/"
 sed 's/.*SCRIPT_DEL_THIS \(.*\)/\1/g' -i "$pkg/WebUI/index.html"
 cp -a "$ROOT/LANGUAGES/languages.json" "$pkg/tool/"
 
-for d in i386 x86_64 aarch64 mips64el; do
+for d in i386 x86_64 aarch64 mips64el loongarch64; do
     for file in "$pkg/tool/$d"/*; do
         name=$(basename "$file")
         if [ "$name" = "xzcat" ]; then
@@ -614,7 +632,7 @@ for gui in "$pkg"/VentoyGUI*; do
         chmod +x "$gui"
     fi
 done
-for d in i386 x86_64 aarch64 mips64el; do
+for d in i386 x86_64 aarch64 mips64el loongarch64; do
     chmod +x "$pkg/tool/$d/xzcat"
     for exe in "$pkg/tool/$d"/Ventoy2Disk.*; do
         if [ -f "$exe" ]; then
